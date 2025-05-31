@@ -1,0 +1,26 @@
+{
+    "id": "72DF796E",
+    "path": "~/Documents/StatApp/Labs/7_Clustering/7_Clustering.R",
+    "project_path": "7_Clustering.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1713690014466.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "11,34",
+        "scrollLine": "0"
+    },
+    "folds": "405|21|429|0|\n",
+    "lastKnownWriteTime": 1715203271,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1715203271394,
+    "read_only": false,
+    "read_only_alternatives": []
+}

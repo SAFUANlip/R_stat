@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<style>body{background-color:white;}</style>
+<script src="lib/htmlwidgets-1.6.1/htmlwidgets.js"></script>
+<script src="lib/rglWebGL-binding-1.0.1/rglWebGL.js"></script>
+<link href="lib/rglwidgetClass-1.0.1/rgl.css" rel="stylesheet" />
+<script src="lib/rglwidgetClass-1.0.1/rglClass.min.js"></script>
+<!--html_preserve--><script type = "text/plain" id = "rgl-vertex-shader">
+#line 2 1
+// File 1 is the vertex shader
+#ifdef GL_ES
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+#endif
+
+attribute vec3 aPos;
+attribute vec4 aCol;
+uniform mat4 mvMatrix;
+uniform mat4 prMatrix;
+varying vec4 vCol;
+varying vec4 vPosition;
+
+#ifdef NEEDS_VNORMAL
+attribute vec3 aNorm;
+uniform mat4 normMatrix;
+varying vec4 vNormal;
+#endif
+
+#if defined(HAS_TEXTURE) || defined (IS_TEXT)
+attribute vec2 aTexcoord;
+varying vec2 vTexcoord;
+#endif
+
+#ifdef FIXED_SIZE
+uniform vec3 textScale;
+#endif
+
+#ifdef FIXED_QUADS
+attribute vec3 aOfs;
+#endif
+
+#ifdef IS_TWOSIDED
+#ifdef HAS_NORMALS
+varying float normz;
+uniform mat4 invPrMatrix;
+#else
+attribute vec3 aPos1;
+attribute vec3 aPos2;
+varying float normz;
+#endif
+#endif // IS_TWOSIDED
+
+#ifdef FAT_LINES
+attribute vec3 aNext;
+attribute vec2 aPoint;
+varying vec2 vPoint;
+varying float vLength;
+uniform float uAspect;
+uniform float uLwd;
+#endif
+
+
+void main(void) {
+  
+#ifndef IS_BRUSH
+#if defined(NCLIPPLANES) || !defined(FIXED_QUADS) || defined(HAS_FOG)
+  vPosition = mvMatrix * vec4(aPos, 1.);
+#endif
+  
+#ifndef FIXED_QUADS
+  gl_Position = prMatrix * vPosition;
+#endif
+#endif // !IS_BRUSH
+  
+#ifdef IS_POINTS
+  gl_PointSize = POINTSIZE;
+#endif
+  
+  vCol = aCol;
+  
+#ifdef NEEDS_VNORMAL
+  vNormal = normMatrix * vec4(-aNorm, dot(aNorm, aPos));
+#endif
+  
+#ifdef IS_TWOSIDED
+#ifdef HAS_NORMALS
+  /* normz should be calculated *after* projection */
+  normz = (invPrMatrix*vNormal).z;
+#else
+  vec4 pos1 = prMatrix*(mvMatrix*vec4(aPos1, 1.));
+  pos1 = pos1/pos1.w - gl_Position/gl_Position.w;
+  vec4 pos2 = prMatrix*(mvMatrix*vec4(aPos2, 1.));
+  pos2 = pos2/pos2.w - gl_Position/gl_Position.w;
+  normz = pos1.x*pos2.y - pos1.y*pos2.x;
+#endif
+#endif // IS_TWOSIDED
+  
+#ifdef NEEDS_VNORMAL
+  vNormal = vec4(normalize(vNormal.xyz/vNormal.w), 1);
+#endif
+  
+#if defined(HAS_TEXTURE) || defined(IS_TEXT)
+  vTexcoord = aTexcoord;
+#endif
+  
+#if defined(FIXED_SIZE) && !defined(ROTATING)
+  vec4 pos = prMatrix * mvMatrix * vec4(aPos, 1.);
+  pos = pos/pos.w;
+  gl_Position = pos + vec4(aOfs*textScale, 0.);
+#endif
+  
+#if defined(IS_SPRITES) && !defined(FIXED_SIZE)
+  vec4 pos = mvMatrix * vec4(aPos, 1.);
+  pos = pos/pos.w + vec4(aOfs,  0.);
+  gl_Position = prMatrix*pos;
+#endif
+  
+#ifdef FAT_LINES
+  /* This code was inspired by Matt Deslauriers' code in 
+   https://mattdesl.svbtle.com/drawing-lines-is-hard */
+  vec2 aspectVec = vec2(uAspect, 1.0);
+  mat4 projViewModel = prMatrix * mvMatrix;
+  vec4 currentProjected = projViewModel * vec4(aPos, 1.0);
+  currentProjected = currentProjected/currentProjected.w;
+  vec4 nextProjected = projViewModel * vec4(aNext, 1.0);
+  vec2 currentScreen = currentProjected.xy * aspectVec;
+  vec2 nextScreen = (nextProjected.xy / nextProjected.w) * aspectVec;
+  float len = uLwd;
+  vec2 dir = vec2(1.0, 0.0);
+  vPoint = aPoint;
+  vLength = length(nextScreen - currentScreen)/2.0;
+  vLength = vLength/(vLength + len);
+  if (vLength > 0.0) {
+    dir = normalize(nextScreen - currentScreen);
+  }
+  vec2 normal = vec2(-dir.y, dir.x);
+  dir.x /= uAspect;
+  normal.x /= uAspect;
+  vec4 offset = vec4(len*(normal*aPoint.x*aPoint.y - dir), 0.0, 0.0);
+  gl_Position = currentProjected + offset;
+#endif
+  
+#ifdef IS_BRUSH
+  gl_Position = vec4(aPos, 1.);
+#endif
+}
+</script>
+<script type = "text/plain" id = "rgl-fragment-shader">
+#line 2 2
+// File 2 is the fragment shader
+#ifdef GL_ES
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+#endif
+varying vec4 vCol; // carries alpha
+varying vec4 vPosition;
+#if defined(HAS_TEXTURE) || defined (IS_TEXT)
+varying vec2 vTexcoord;
+uniform sampler2D uSampler;
+#endif
+
+#ifdef HAS_FOG
+uniform int uFogMode;
+uniform vec3 uFogColor;
+uniform vec4 uFogParms;
+#endif
+
+#if defined(IS_LIT) && !defined(FIXED_QUADS)
+varying vec4 vNormal;
+#endif
+
+#if NCLIPPLANES > 0
+uniform vec4 vClipplane[NCLIPPLANES];
+#endif
+
+#if NLIGHTS > 0
+uniform mat4 mvMatrix;
+#endif
+
+#ifdef IS_LIT
+uniform vec3 emission;
+uniform float shininess;
+#if NLIGHTS > 0
+uniform vec3 ambient[NLIGHTS];
+uniform vec3 specular[NLIGHTS]; // light*material
+uniform vec3 diffuse[NLIGHTS];
+uniform vec3 lightDir[NLIGHTS];
+uniform bool viewpoint[NLIGHTS];
+uniform bool finite[NLIGHTS];
+#endif
+#endif // IS_LIT
+
+#ifdef IS_TWOSIDED
+uniform bool front;
+varying float normz;
+#endif
+
+#ifdef FAT_LINES
+varying vec2 vPoint;
+varying float vLength;
+#endif
+
+void main(void) {
+  vec4 fragColor;
+#ifdef FAT_LINES
+  vec2 point = vPoint;
+  bool neg = point.y < 0.0;
+  point.y = neg ? (point.y + vLength)/(1.0 - vLength) :
+                 -(point.y - vLength)/(1.0 - vLength);
+#if defined(IS_TRANSPARENT) && defined(IS_LINESTRIP)
+  if (neg && length(point) <= 1.0) discard;
+#endif
+  point.y = min(point.y, 0.0);
+  if (length(point) > 1.0) discard;
+#endif // FAT_LINES
+  
+#ifdef ROUND_POINTS
+  vec2 coord = gl_PointCoord - vec2(0.5);
+  if (length(coord) > 0.5) discard;
+#endif
+  
+#if NCLIPPLANES > 0
+  for (int i = 0; i < NCLIPPLANES; i++)
+    if (dot(vPosition, vClipplane[i]) < 0.0) discard;
+#endif
+    
+#ifdef FIXED_QUADS
+    vec3 n = vec3(0., 0., 1.);
+#elif defined(IS_LIT)
+    vec3 n = normalize(vNormal.xyz);
+#endif
+    
+#ifdef IS_TWOSIDED
+    if ((normz <= 0.) != front) discard;
+#endif
+    
+#ifdef IS_LIT
+    vec3 eye = normalize(-vPosition.xyz/vPosition.w);
+    vec3 lightdir;
+    vec4 colDiff;
+    vec3 halfVec;
+    vec4 lighteffect = vec4(emission, 0.);
+    vec3 col;
+    float nDotL;
+#ifdef FIXED_QUADS
+    n = -faceforward(n, n, eye);
+#endif
+    
+#if NLIGHTS > 0
+    for (int i=0;i<NLIGHTS;i++) {
+      colDiff = vec4(vCol.rgb * diffuse[i], vCol.a);
+      lightdir = lightDir[i];
+      if (!viewpoint[i])
+        lightdir = (mvMatrix * vec4(lightdir, 1.)).xyz;
+      if (!finite[i]) {
+        halfVec = normalize(lightdir + eye);
+      } else {
+        lightdir = normalize(lightdir - vPosition.xyz/vPosition.w);
+        halfVec = normalize(lightdir + eye);
+      }
+      col = ambient[i];
+      nDotL = dot(n, lightdir);
+      col = col + max(nDotL, 0.) * colDiff.rgb;
+      col = col + pow(max(dot(halfVec, n), 0.), shininess) * specular[i];
+      lighteffect = lighteffect + vec4(col, colDiff.a);
+    }
+#endif
+    
+#else // not IS_LIT
+    vec4 colDiff = vCol;
+    vec4 lighteffect = colDiff;
+#endif
+    
+#ifdef IS_TEXT
+    vec4 textureColor = lighteffect*texture2D(uSampler, vTexcoord);
+#endif
+    
+#ifdef HAS_TEXTURE
+#ifdef TEXTURE_rgb
+    vec4 textureColor = lighteffect*vec4(texture2D(uSampler, vTexcoord).rgb, 1.);
+#endif
+    
+#ifdef TEXTURE_rgba
+    vec4 textureColor = lighteffect*texture2D(uSampler, vTexcoord);
+#endif
+    
+#ifdef TEXTURE_alpha
+    vec4 textureColor = texture2D(uSampler, vTexcoord);
+    float luminance = dot(vec3(1.,1.,1.), textureColor.rgb)/3.;
+    textureColor =  vec4(lighteffect.rgb, lighteffect.a*luminance);
+#endif
+    
+#ifdef TEXTURE_luminance
+    vec4 textureColor = vec4(lighteffect.rgb*dot(texture2D(uSampler, vTexcoord).rgb, vec3(1.,1.,1.))/3., lighteffect.a);
+#endif
+    
+#ifdef TEXTURE_luminance_alpha
+    vec4 textureColor = texture2D(uSampler, vTexcoord);
+    float luminance = dot(vec3(1.,1.,1.),textureColor.rgb)/3.;
+    textureColor = vec4(lighteffect.rgb*luminance, lighteffect.a*textureColor.a);
+#endif
+    
+    fragColor = textureColor;
+
+#elif defined(IS_TEXT)
+    if (textureColor.a < 0.1)
+      discard;
+    else
+      fragColor = textureColor;
+#else
+    fragColor = lighteffect;
+#endif // HAS_TEXTURE
+    
+#ifdef HAS_FOG
+    // uFogParms elements: x = near, y = far, z = fogscale, w = (1-sin(FOV/2))/(1+sin(FOV/2))
+    // In Exp and Exp2: use density = density/far
+    // fogF will be the proportion of fog
+    // Initialize it to the linear value
+    float fogF;
+    if (uFogMode > 0) {
+      fogF = (uFogParms.y - vPosition.z/vPosition.w)/(uFogParms.y - uFogParms.x);
+      if (uFogMode > 1)
+        fogF = mix(uFogParms.w, 1.0, fogF);
+      fogF = fogF*uFogParms.z;
+      if (uFogMode == 2)
+        fogF = 1.0 - exp(-fogF);
+      // Docs are wrong: use (density*c)^2, not density*c^2
+      // https://gitlab.freedesktop.org/mesa/mesa/-/blob/master/src/mesa/swrast/s_fog.c#L58
+      else if (uFogMode == 3)
+        fogF = 1.0 - exp(-fogF*fogF);
+      fogF = clamp(fogF, 0.0, 1.0);
+      gl_FragColor = vec4(mix(fragColor.rgb, uFogColor, fogF), fragColor.a);
+    } else gl_FragColor = fragColor;
+#else
+    gl_FragColor = fragColor;
+#endif // HAS_FOG
+    
+}
+</script><!--/html_preserve-->
+<script src="lib/CanvasMatrix4-1.0.1/CanvasMatrix.min.js"></script>
+
+</head>
+<body>
+<div id="htmlwidget_container">
+  <div class="rglWebGL html-widget html-fill-item-overflow-hidden html-fill-item" id="rgl84504" style="width:960px;height:500px;"></div>
+</div>
+<script type="application/json" data-for="rgl84504">{"x":{"material":{"color":"#000000","alpha":1,"lit":true,"ambient":"#000000","specular":"#FFFFFF","emission":"#000000","shininess":50,"smooth":true,"front":"filled","back":"filled","size":3,"lwd":1,"fog":true,"point_antialias":false,"line_antialias":false,"texture":null,"textype":"rgb","texmipmap":false,"texminfilter":"linear","texmagfilter":"linear","texenvmap":false,"depth_mask":true,"depth_test":"less","isTransparent":false,"polygon_offset":[0,0],"margin":"","floating":false,"tag":"","blend":["src_alpha","one_minus_src_alpha"]},"rootSubscene":29,"objects":{"101":{"id":101,"type":"points","material":{"lit":false},"vertices":"0","colors":"1","centers":"2","ignoreExtent":false,"flags":34816},"103":{"id":103,"type":"text","material":{"lit":false,"margin":0,"floating":true,"edge":[0,1,1]},"vertices":"3","colors":"4","texts":[["lat"]],"cex":[[1]],"adj":[[0.5,0.5,0.5]],"centers":"5","family":[["sans"]],"font":[[1]],"ignoreExtent":true,"flags":33808},"104":{"id":104,"type":"text","material":{"lit":false,"margin":1,"floating":true,"edge":[1,1,1]},"vertices":"6","colors":"7","texts":[["long"]],"cex":[[1]],"adj":[[0.5,0.5,0.5]],"centers":"8","family":[["sans"]],"font":[[1]],"ignoreExtent":true,"flags":33808},"105":{"id":105,"type":"text","material":{"lit":false,"margin":2,"floating":true,"edge":[1,1,1]},"vertices":"9","colors":"10","texts":[["depth"]],"cex":[[1]],"adj":[[0.5,0.5,0.5]],"centers":"11","family":[["sans"]],"font":[[1]],"ignoreExtent":true,"flags":33808},"33":{"id":33,"type":"light","vertices":[[0,0,1]],"colors":[[1,1,1,1],[1,1,1,1],[1,1,1,1]],"viewpoint":true,"finite":false},"34":{"id":34,"type":"background","material":{"lit":false,"back":"lines"},"colors":"12","centers":"13","sphere":false,"fogtype":"none","fogscale":1,"flags":32768},"102":{"id":102,"type":"bboxdeco","material":{"front":"lines","back":"lines"},"vertices":"14","colors":"15","axes":{"mode":["pretty","pretty","pretty"],"step":[5,5,1],"nticks":[5,5,5],"marklen":[15,15,15],"expand":[1.02999997138977,1.02999997138977,1.02999997138977]},"draw_front":true,"flags":32769},"29":{"id":29,"type":"subscene","par3d":{"antialias":8,"FOV":30,"ignoreExtent":false,"listeners":29,"mouseMode":{"none":"none","left":"trackball","right":"zoom","middle":"fov","wheel":"pull"},"observer":[0,0,88.9767150878906],"modelMatrix":[[1,0,0,24.6550006866455],[0,0.342020153999329,0.939692616462708,-57.1204719543457],[0,-0.939692616462708,0.342020153999329,78.4861755371094],[0,0,0,1]],"projMatrix":[[3.73205089569092,0,0,0],[0,3.73205089569092,0,0],[0,0,-3.86370301246643,-320.750732421875],[0,0,-1,0]],"skipRedraw":false,"userMatrix":[[1,0,0,0],[0,0.342020143325668,0.939692620785909,0],[0,-0.939692620785909,0.342020143325668,0],[0,0,0,1]],"userProjection":[[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]],"scale":[1,1,1],"viewport":{"x":0,"y":0,"width":1,"height":1},"zoom":1,"bbox":[-38.5900001525879,-10.7200002670288,165.669998168945,188.130004882812,-6.80000019073486,-0.400000005960464],"windowRect":[0,0,256,256],"family":"sans","font":1,"cex":1,"useFreeType":true,"fontname":"NULL","maxClipPlanes":2147483647,"glVersion":"NA","activeSubscene":0},"embeddings":{"viewport":"replace","projection":"replace","model":"replace","mouse":"replace"},"objects":[34,102,101,103,104,105,33],"subscenes":[],"flags":36113}},"crosstalk":{"key":[],"group":[],"id":[],"options":[]},"width":257,"height":257,"buffer":{"accessors":[{"bufferView":0,"componentType":5126,"count":1000,"type":"VEC3"},{"bufferView":1,"componentType":5121,"count":1000,"type":"VEC4","normalized":true},{"bufferView":2,"componentType":5126,"count":1000,"type":"VEC3"},{"bufferView":3,"componentType":5126,"count":1,"type":"VEC3"},{"bufferView":4,"componentType":5121,"count":1,"type":"VEC4"},{"bufferView":5,"componentType":5126,"count":1,"type":"VEC3"},{"bufferView":6,"componentType":5126,"count":1,"type":"VEC3"},{"bufferView":7,"componentType":5121,"count":1,"type":"VEC4"},{"bufferView":8,"componentType":5126,"count":1,"type":"VEC3"},{"bufferView":9,"componentType":5126,"count":1,"type":"VEC3"},{"bufferView":10,"componentType":5121,"count":1,"type":"VEC4"},{"bufferView":11,"componentType":5126,"count":1,"type":"VEC3"},{"bufferView":12,"componentType":5121,"count":1,"type":"VEC4"},{"bufferView":13,"componentType":5121,"count":1,"type":"VEC3"},{"bufferView":14,"componentType":5126,"count":15,"type":"VEC3"},{"bufferView":15,"componentType":5121,"count":1,"type":"VEC4"}],"bufferViews":[{"buffer":0,"byteLength":12000,"byteOffset":0},{"buffer":0,"byteLength":4000,"byteOffset":12000},{"buffer":0,"byteLength":12000,"byteOffset":16000},{"buffer":0,"byteLength":12,"byteOffset":28000},{"buffer":0,"byteLength":4,"byteOffset":28012},{"buffer":0,"byteLength":12,"byteOffset":28016},{"buffer":0,"byteLength":12,"byteOffset":28028},{"buffer":0,"byteLength":4,"byteOffset":28040},{"buffer":0,"byteLength":12,"byteOffset":28044},{"buffer":0,"byteLength":12,"byteOffset":28056},{"buffer":0,"byteLength":4,"byteOffset":28068},{"buffer":0,"byteLength":12,"byteOffset":28072},{"buffer":0,"byteLength":4,"byteOffset":28084},{"buffer":0,"byteLength":3,"byteOffset":28088},{"buffer":0,"byteLength":180,"byteOffset":28092},{"buffer":0,"byteLength":4,"byteOffset":28272}],"buffers":[{"byteLength":28276,"bytes":"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\nPENmZua+pHDPwT2KM0NmZpbA4XpEwVwPJ0NSuB7APQqhwTMzOEP2KBzAMzOLwc3MO0PNzMy+\nUriswVyPKkMzM9O/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/YdBP/99Ta//fU2v/31Nr/99T\na/9h0E//31Nr/99Ta/9h0E//31Nr/2HQT//fU2v/31Nr/99Ta//fU2v/YdBP/99Ta//fU2v/\n31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/31Nr/2HQT//fU2v/31Nr/99Ta//fU2v/YdBP/99T\na//fU2v/YdBP/99Ta//fU2v/31Nr/99Ta/9h0E//31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/\n31Nr/2HQT//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//YdBP/99T\na//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/YdBP/99Ta//fU2v/31Nr/99Ta/9h0E//\n31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/YdBP/2HQ\nT//fU2v/YdBP/99Ta//fU2v/31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/\n31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//YdBP/2HQ\nT/9h0E//YdBP/99Ta//fU2v/31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/\nYdBP/99Ta//fU2v/YdBP/99Ta//fU2v/31Nr/99Ta/9h0E//31Nr/2HQT//fU2v/YdBP/99T\na//fU2v/YdBP/99Ta//fU2v/31Nr/2HQT//fU2v/YdBP/2HQT//fU2v/YdBP/99Ta/9h0E//\nYdBP/99Ta//fU2v/YdBP/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/2HQT//fU2v/31Nr/99T\na//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/\n31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99T\na//fU2v/31Nr/99Ta//fU2v/YdBP/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/\n31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/YdBP/99T\na//fU2v/31Nr/2HQT//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/2HQT//fU2v/\n31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/YdBP/2HQT/9h0E//31Nr/2HQ\nT//fU2v/31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/31Nr/2HQT//fU2v/31Nr/99Ta/9h0E//\nYdBP/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99T\na//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/YdBP/99Ta//fU2v/\n31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//YdBP/99Ta//fU2v/31Nr/2HQT//fU2v/31Nr/99T\na//fU2v/31Nr/2HQT/9h0E//31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//31Nr/2HQT/9h0E//\n31Nr/99Ta//fU2v/YdBP/99Ta//fU2v/YdBP/99Ta/9h0E//31Nr/99Ta//fU2v/YdBP/99T\na//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/\n31Nr/99Ta//fU2v/YdBP/99Ta//fU2v/31Nr/99Ta/9h0E//31Nr/99Ta/9h0E//31Nr/99T\na//fU2v/31Nr/2HQT//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/\n31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//YdBP/99Ta/9h0E//31Nr/99Ta//fU2v/31Nr/2HQ\nT//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/YdBP/99Ta/9h0E//\n31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/31Nr/2HQT//fU2v/31Nr/2HQ\nT/9h0E//31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//\n31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/2HQT//fU2v/31Nr/99Ta/9h0E//31Nr/2HQ\nT//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//31Nr/99Ta/9h0E//\n31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/2HQT//fU2v/31Nr/99T\na//fU2v/31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/\n31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/YdBP/99Ta/9h0E//31Nr/99Ta//fU2v/YdBP/99T\na//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//31Nr/99Ta/9h0E//YdBP/2HQT//fU2v/\n31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/YdBP/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/2HQ\nT//fU2v/31Nr/2HQT/9h0E//31Nr/99Ta/9h0E//YdBP/99Ta/9h0E//31Nr/2HQT//fU2v/\nYdBP/2HQT//fU2v/YdBP/2HQT/9h0E//YdBP/2HQT/9h0E//YdBP/99Ta//fU2v/31Nr/99T\na/9h0E//YdBP/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/2HQT//fU2v/31Nr/99Ta//fU2v/\n31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/YdBP/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99T\na//fU2v/31Nr/2HQT//fU2v/YdBP/99Ta//fU2v/31Nr/2HQT//fU2v/31Nr/99Ta//fU2v/\n31Nr/2HQT/9h0E//31Nr/2HQT/9h0E//31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99T\na//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//YdBP/99Ta//fU2v/31Nr/99Ta/9h0E//\n31Nr/2HQT//fU2v/31Nr/99Ta//fU2v/YdBP/99Ta//fU2v/31Nr/2HQT//fU2v/31Nr/99T\na//fU2v/31Nr/99Ta//fU2v/31Nr/2HQT//fU2v/31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/\n31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/2HQT//fU2v/YdBP/2HQT//fU2v/31Nr/99T\na//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//\n31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/31Nr/2HQ\nT//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//\n31Nr/2HQT//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/YdBP/99T\na/9h0E//31Nr/2HQT//fU2v/31Nr/99Ta//fU2v/YdBP/99Ta//fU2v/31Nr/2HQT/9h0E//\n31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/31Nr/99T\na//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/\nYdBP/99Ta/9h0E//31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//YdBP/99T\na//fU2v/YdBP/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/2HQT//fU2v/\nYdBP/2HQT//fU2v/31Nr/99Ta//fU2v/YdBP/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99T\na//fU2v/31Nr/2HQT//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/\n31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99T\na//fU2v/31Nr/99Ta/9h0E//31Nr/2HQT//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/\n31Nr/99Ta/9h0E//31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/YdBP/99Ta//fU2v/31Nr/99T\na//fU2v/31Nr/99Ta/9h0E//YdBP/99Ta//fU2v/31Nr/2HQT//fU2v/31Nr/2HQT//fU2v/\n31Nr/99Ta//fU2v/YdBP/2HQT//fU2v/31Nr/2HQT/9h0E//31Nr/2HQT/9h0E//31Nr/99T\na//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/YdBP/2HQT//fU2v/31Nr/2HQT/9h0E//\n31Nr/99Ta/9h0E//31Nr/2HQT//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99T\na//fU2v/31Nr/99Ta//fU2v/31Nr/2HQT/9h0E//31Nr/99Ta/9h0E//31Nr/99Ta/9h0E//\nYdBP/99Ta//fU2v/31Nr/99Ta/9h0E//31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//31Nr/99T\na/9h0E//31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/\n31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99T\na//fU2v/31Nr/99Ta//fU2v/31Nr/2HQT/9h0E//31Nr/99Ta//fU2v/31Nr/99Ta/9h0E//\n31Nr/99Ta//fU2v/31Nr/2HQT//fU2v/31Nr/99Ta//fU2v/31Nr/2HQT//fU2v/YdBP/99T\na//fU2v/31Nr/2HQT/9h0E//YdBP/99Ta//fU2v/31Nr/99Ta//fU2v/31Nr/99Ta//fU2v/\nYdBP/99Ta//fU2v/YdBP/ylco8G4njVDCtezwMP1pMGuBzVDAADQwAAA0MGaGThDPQrXvo/C\nj8H2qDVD7FHIwClco8HD9TVDFK7PwKRwncFcTzhDmpn5vzMzO8GaGSZDhetRv0jh4MEU7jVD\n7FH4v4Xr5cFxvTVDPQoHwI/Ci8EKlzNDPQrHwB+Fq8GksDRDXI+6wPYoRMEAACdDKVwfwOxR\nlMEpHDZDrkexwAAAqMH2qDVDAADAwJqZpcGF6ylDheuxvz0Kf8Ez8zhDCtdDwHE9WsHD9SVD\nAAAAv9ejjsEAgDVDzcy8wAAAvMGuxzNDZma2wD0KtcFcTzRDKVy/wFK4psH2KDVD7FG4wBSu\nL8HsUSZDPQoHwGZmusH2KDRDCtejwJqZ8cEAADZDAACgv65HncGuRzRDheuJwB+Fj8FxfTVD\nCterwB+Fa8GPgidDZmbGvxSug8E9yjRDKVyfwI/Cp8FSeDVDcT26wFK4nsG4XjZDhetRwNej\ntMFxPTNDw/WwwFyPgsFxvSZDAAAAv83MeMHNDDlDSOE6wGZmvMHNzDRDKVxfwGZmgsEAADpD\nj8L1vlyPzsF7VDNDAADAwArXlcHhOilDCtcDwLgejcGuRzVDFK63wK5HjcFmZjVDMzO7wFyP\nlsF7VClDMzMTwOF6FcKuxzBD7FEowMP1dMGaGTpDj8J1v4/Cx8Hs0TNDH4WjwArXd8E9CjpD\n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"}]},"context":{"shiny":false,"rmarkdown":null},"vertexShader":"#line 2 1\n// File 1 is the vertex shader\n#ifdef GL_ES\n#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n#endif\n\nattribute vec3 aPos;\nattribute vec4 aCol;\nuniform mat4 mvMatrix;\nuniform mat4 prMatrix;\nvarying vec4 vCol;\nvarying vec4 vPosition;\n\n#ifdef NEEDS_VNORMAL\nattribute vec3 aNorm;\nuniform mat4 normMatrix;\nvarying vec4 vNormal;\n#endif\n\n#if defined(HAS_TEXTURE) || defined (IS_TEXT)\nattribute vec2 aTexcoord;\nvarying vec2 vTexcoord;\n#endif\n\n#ifdef FIXED_SIZE\nuniform vec3 textScale;\n#endif\n\n#ifdef FIXED_QUADS\nattribute vec3 aOfs;\n#endif\n\n#ifdef IS_TWOSIDED\n#ifdef HAS_NORMALS\nvarying float normz;\nuniform mat4 invPrMatrix;\n#else\nattribute vec3 aPos1;\nattribute vec3 aPos2;\nvarying float normz;\n#endif\n#endif // IS_TWOSIDED\n\n#ifdef FAT_LINES\nattribute vec3 aNext;\nattribute vec2 aPoint;\nvarying vec2 vPoint;\nvarying float vLength;\nuniform float uAspect;\nuniform float uLwd;\n#endif\n\n\nvoid main(void) {\n  \n#ifndef IS_BRUSH\n#if defined(NCLIPPLANES) || !defined(FIXED_QUADS) || defined(HAS_FOG)\n  vPosition = mvMatrix * vec4(aPos, 1.);\n#endif\n  \n#ifndef FIXED_QUADS\n  gl_Position = prMatrix * vPosition;\n#endif\n#endif // !IS_BRUSH\n  \n#ifdef IS_POINTS\n  gl_PointSize = POINTSIZE;\n#endif\n  \n  vCol = aCol;\n  \n#ifdef NEEDS_VNORMAL\n  vNormal = normMatrix * vec4(-aNorm, dot(aNorm, aPos));\n#endif\n  \n#ifdef IS_TWOSIDED\n#ifdef HAS_NORMALS\n  /* normz should be calculated *after* projection */\n  normz = (invPrMatrix*vNormal).z;\n#else\n  vec4 pos1 = prMatrix*(mvMatrix*vec4(aPos1, 1.));\n  pos1 = pos1/pos1.w - gl_Position/gl_Position.w;\n  vec4 pos2 = prMatrix*(mvMatrix*vec4(aPos2, 1.));\n  pos2 = pos2/pos2.w - gl_Position/gl_Position.w;\n  normz = pos1.x*pos2.y - pos1.y*pos2.x;\n#endif\n#endif // IS_TWOSIDED\n  \n#ifdef NEEDS_VNORMAL\n  vNormal = vec4(normalize(vNormal.xyz/vNormal.w), 1);\n#endif\n  \n#if defined(HAS_TEXTURE) || defined(IS_TEXT)\n  vTexcoord = aTexcoord;\n#endif\n  \n#if defined(FIXED_SIZE) && !defined(ROTATING)\n  vec4 pos = prMatrix * mvMatrix * vec4(aPos, 1.);\n  pos = pos/pos.w;\n  gl_Position = pos + vec4(aOfs*textScale, 0.);\n#endif\n  \n#if defined(IS_SPRITES) && !defined(FIXED_SIZE)\n  vec4 pos = mvMatrix * vec4(aPos, 1.);\n  pos = pos/pos.w + vec4(aOfs,  0.);\n  gl_Position = prMatrix*pos;\n#endif\n  \n#ifdef FAT_LINES\n  /* This code was inspired by Matt Deslauriers' code in \n   https://mattdesl.svbtle.com/drawing-lines-is-hard */\n  vec2 aspectVec = vec2(uAspect, 1.0);\n  mat4 projViewModel = prMatrix * mvMatrix;\n  vec4 currentProjected = projViewModel * vec4(aPos, 1.0);\n  currentProjected = currentProjected/currentProjected.w;\n  vec4 nextProjected = projViewModel * vec4(aNext, 1.0);\n  vec2 currentScreen = currentProjected.xy * aspectVec;\n  vec2 nextScreen = (nextProjected.xy / nextProjected.w) * aspectVec;\n  float len = uLwd;\n  vec2 dir = vec2(1.0, 0.0);\n  vPoint = aPoint;\n  vLength = length(nextScreen - currentScreen)/2.0;\n  vLength = vLength/(vLength + len);\n  if (vLength > 0.0) {\n    dir = normalize(nextScreen - currentScreen);\n  }\n  vec2 normal = vec2(-dir.y, dir.x);\n  dir.x /= uAspect;\n  normal.x /= uAspect;\n  vec4 offset = vec4(len*(normal*aPoint.x*aPoint.y - dir), 0.0, 0.0);\n  gl_Position = currentProjected + offset;\n#endif\n  \n#ifdef IS_BRUSH\n  gl_Position = vec4(aPos, 1.);\n#endif\n}","fragmentShader":"#line 2 2\n// File 2 is the fragment shader\n#ifdef GL_ES\n#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n#endif\nvarying vec4 vCol; // carries alpha\nvarying vec4 vPosition;\n#if defined(HAS_TEXTURE) || defined (IS_TEXT)\nvarying vec2 vTexcoord;\nuniform sampler2D uSampler;\n#endif\n\n#ifdef HAS_FOG\nuniform int uFogMode;\nuniform vec3 uFogColor;\nuniform vec4 uFogParms;\n#endif\n\n#if defined(IS_LIT) && !defined(FIXED_QUADS)\nvarying vec4 vNormal;\n#endif\n\n#if NCLIPPLANES > 0\nuniform vec4 vClipplane[NCLIPPLANES];\n#endif\n\n#if NLIGHTS > 0\nuniform mat4 mvMatrix;\n#endif\n\n#ifdef IS_LIT\nuniform vec3 emission;\nuniform float shininess;\n#if NLIGHTS > 0\nuniform vec3 ambient[NLIGHTS];\nuniform vec3 specular[NLIGHTS]; // light*material\nuniform vec3 diffuse[NLIGHTS];\nuniform vec3 lightDir[NLIGHTS];\nuniform bool viewpoint[NLIGHTS];\nuniform bool finite[NLIGHTS];\n#endif\n#endif // IS_LIT\n\n#ifdef IS_TWOSIDED\nuniform bool front;\nvarying float normz;\n#endif\n\n#ifdef FAT_LINES\nvarying vec2 vPoint;\nvarying float vLength;\n#endif\n\nvoid main(void) {\n  vec4 fragColor;\n#ifdef FAT_LINES\n  vec2 point = vPoint;\n  bool neg = point.y < 0.0;\n  point.y = neg ? (point.y + vLength)/(1.0 - vLength) :\n                 -(point.y - vLength)/(1.0 - vLength);\n#if defined(IS_TRANSPARENT) && defined(IS_LINESTRIP)\n  if (neg && length(point) <= 1.0) discard;\n#endif\n  point.y = min(point.y, 0.0);\n  if (length(point) > 1.0) discard;\n#endif // FAT_LINES\n  \n#ifdef ROUND_POINTS\n  vec2 coord = gl_PointCoord - vec2(0.5);\n  if (length(coord) > 0.5) discard;\n#endif\n  \n#if NCLIPPLANES > 0\n  for (int i = 0; i < NCLIPPLANES; i++)\n    if (dot(vPosition, vClipplane[i]) < 0.0) discard;\n#endif\n    \n#ifdef FIXED_QUADS\n    vec3 n = vec3(0., 0., 1.);\n#elif defined(IS_LIT)\n    vec3 n = normalize(vNormal.xyz);\n#endif\n    \n#ifdef IS_TWOSIDED\n    if ((normz <= 0.) != front) discard;\n#endif\n    \n#ifdef IS_LIT\n    vec3 eye = normalize(-vPosition.xyz/vPosition.w);\n    vec3 lightdir;\n    vec4 colDiff;\n    vec3 halfVec;\n    vec4 lighteffect = vec4(emission, 0.);\n    vec3 col;\n    float nDotL;\n#ifdef FIXED_QUADS\n    n = -faceforward(n, n, eye);\n#endif\n    \n#if NLIGHTS > 0\n    for (int i=0;i<NLIGHTS;i++) {\n      colDiff = vec4(vCol.rgb * diffuse[i], vCol.a);\n      lightdir = lightDir[i];\n      if (!viewpoint[i])\n        lightdir = (mvMatrix * vec4(lightdir, 1.)).xyz;\n      if (!finite[i]) {\n        halfVec = normalize(lightdir + eye);\n      } else {\n        lightdir = normalize(lightdir - vPosition.xyz/vPosition.w);\n        halfVec = normalize(lightdir + eye);\n      }\n      col = ambient[i];\n      nDotL = dot(n, lightdir);\n      col = col + max(nDotL, 0.) * colDiff.rgb;\n      col = col + pow(max(dot(halfVec, n), 0.), shininess) * specular[i];\n      lighteffect = lighteffect + vec4(col, colDiff.a);\n    }\n#endif\n    \n#else // not IS_LIT\n    vec4 colDiff = vCol;\n    vec4 lighteffect = colDiff;\n#endif\n    \n#ifdef IS_TEXT\n    vec4 textureColor = lighteffect*texture2D(uSampler, vTexcoord);\n#endif\n    \n#ifdef HAS_TEXTURE\n#ifdef TEXTURE_rgb\n    vec4 textureColor = lighteffect*vec4(texture2D(uSampler, vTexcoord).rgb, 1.);\n#endif\n    \n#ifdef TEXTURE_rgba\n    vec4 textureColor = lighteffect*texture2D(uSampler, vTexcoord);\n#endif\n    \n#ifdef TEXTURE_alpha\n    vec4 textureColor = texture2D(uSampler, vTexcoord);\n    float luminance = dot(vec3(1.,1.,1.), textureColor.rgb)/3.;\n    textureColor =  vec4(lighteffect.rgb, lighteffect.a*luminance);\n#endif\n    \n#ifdef TEXTURE_luminance\n    vec4 textureColor = vec4(lighteffect.rgb*dot(texture2D(uSampler, vTexcoord).rgb, vec3(1.,1.,1.))/3., lighteffect.a);\n#endif\n    \n#ifdef TEXTURE_luminance_alpha\n    vec4 textureColor = texture2D(uSampler, vTexcoord);\n    float luminance = dot(vec3(1.,1.,1.),textureColor.rgb)/3.;\n    textureColor = vec4(lighteffect.rgb*luminance, lighteffect.a*textureColor.a);\n#endif\n    \n    fragColor = textureColor;\n\n#elif defined(IS_TEXT)\n    if (textureColor.a < 0.1)\n      discard;\n    else\n      fragColor = textureColor;\n#else\n    fragColor = lighteffect;\n#endif // HAS_TEXTURE\n    \n#ifdef HAS_FOG\n    // uFogParms elements: x = near, y = far, z = fogscale, w = (1-sin(FOV/2))/(1+sin(FOV/2))\n    // In Exp and Exp2: use density = density/far\n    // fogF will be the proportion of fog\n    // Initialize it to the linear value\n    float fogF;\n    if (uFogMode > 0) {\n      fogF = (uFogParms.y - vPosition.z/vPosition.w)/(uFogParms.y - uFogParms.x);\n      if (uFogMode > 1)\n        fogF = mix(uFogParms.w, 1.0, fogF);\n      fogF = fogF*uFogParms.z;\n      if (uFogMode == 2)\n        fogF = 1.0 - exp(-fogF);\n      // Docs are wrong: use (density*c)^2, not density*c^2\n      // https://gitlab.freedesktop.org/mesa/mesa/-/blob/master/src/mesa/swrast/s_fog.c#L58\n      else if (uFogMode == 3)\n        fogF = 1.0 - exp(-fogF*fogF);\n      fogF = clamp(fogF, 0.0, 1.0);\n      gl_FragColor = vec4(mix(fragColor.rgb, uFogColor, fogF), fragColor.a);\n    } else gl_FragColor = fragColor;\n#else\n    gl_FragColor = fragColor;\n#endif // HAS_FOG\n    \n}","players":[],"webGLoptions":{"preserveDrawingBuffer":true}},"evals":[],"jsHooks":[]}</script>
+<script type="application/htmlwidget-sizing" data-for="rgl84504">{"viewer":{"width":450,"height":350,"padding":15,"fill":true},"browser":{"width":960,"height":500,"padding":40,"fill":false}}</script>
+</body>
+</html>

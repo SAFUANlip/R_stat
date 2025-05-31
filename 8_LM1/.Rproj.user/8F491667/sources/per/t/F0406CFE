@@ -1,0 +1,27 @@
+{
+    "id": "F0406CFE",
+    "path": "~/Documents/Polimi/Teachings/Applied Statistics/2022-2023/Labs/Lab 9/LAB_9.R",
+    "project_path": "LAB_9.R",
+    "type": "r_source",
+    "hash": "1388371847",
+    "contents": "",
+    "dirty": false,
+    "created": 1683640622933.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "588,32",
+        "scrollLine": "569",
+        "ignored_words": "colinearity\n"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1683792964,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1683792964669,
+    "read_only": false,
+    "read_only_alternatives": []
+}

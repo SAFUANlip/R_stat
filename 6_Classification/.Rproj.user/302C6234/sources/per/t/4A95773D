@@ -1,0 +1,28 @@
+{
+    "id": "4A95773D",
+    "path": null,
+    "project_path": null,
+    "type": "object_explorer",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1748103997466.0,
+    "source_on_save": false,
+    "relative_order": 6,
+    "properties": {
+        "id": "7a8d26fe430f4a019c5416f209cf4454",
+        "name": "predictions",
+        "title": "predictions",
+        "language": "R",
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 0,
+    "encoding": "",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1748103997466,
+    "read_only": false,
+    "read_only_alternatives": []
+}

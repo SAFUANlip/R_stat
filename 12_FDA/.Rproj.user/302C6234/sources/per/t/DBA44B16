@@ -1,0 +1,26 @@
+{
+    "id": "DBA44B16",
+    "path": "~/R_stat/12_FDA/2024_FDA_FPCA.R",
+    "project_path": "2024_FDA_FPCA.R",
+    "type": "r_source",
+    "hash": "1957467747",
+    "contents": "",
+    "dirty": false,
+    "created": 1748596814062.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "275,0",
+        "scrollLine": "248"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1748610387,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1748610387061,
+    "read_only": false,
+    "read_only_alternatives": []
+}

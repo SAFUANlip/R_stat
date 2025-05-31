@@ -1,0 +1,27 @@
+{
+    "id": "0B7D9E20",
+    "path": "~/R_stat/1_IntroR/1_IntroR.R",
+    "project_path": "1_IntroR.R",
+    "type": "r_source",
+    "hash": "1696710666",
+    "contents": "",
+    "dirty": true,
+    "created": 1740130226522.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "621,26",
+        "scrollLine": "591",
+        "docOutlineVisible": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1740167563,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1740239867489,
+    "read_only": false,
+    "read_only_alternatives": []
+}

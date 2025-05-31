@@ -1,0 +1,27 @@
+{
+    "id": "F1CEBDBF",
+    "path": "~/Documents/StatApp/Labs/3_MVNorm/3_MVNorm.R",
+    "project_path": "3_MVNorm.R",
+    "type": "r_source",
+    "hash": "936656093",
+    "contents": "",
+    "dirty": false,
+    "created": 1710447619804.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "527,89",
+        "scrollLine": "511",
+        "ignored_words": "univariate,Wilk,Zirkler’s,Henze,Royston’s,outliers,Univariate,parametrics,Zirkler's,Mahalanobis\n"
+    },
+    "folds": "111|16|125|0|\n149|43|219|0|\n277|28|296|0|\n323|33|342|0|\n353|37|374|0|\n412|33|438|0|\n443|31|470|0|\n622|33|642|0|\n",
+    "lastKnownWriteTime": 1741881554,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1741881554251,
+    "read_only": false,
+    "read_only_alternatives": []
+}

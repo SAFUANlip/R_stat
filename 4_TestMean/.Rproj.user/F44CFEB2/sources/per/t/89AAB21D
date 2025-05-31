@@ -1,0 +1,27 @@
+{
+    "id": "89AAB21D",
+    "path": "~/Documents/StatApp/Labs/4_TestMean/4_TestMean.R",
+    "project_path": "4_TestMean.R",
+    "type": "r_source",
+    "hash": "3624904783",
+    "contents": "",
+    "dirty": false,
+    "created": 1711098773636.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "732,22",
+        "scrollLine": "724",
+        "ignored_words": "wastewater,dataset,Hotelling,univariate\n"
+    },
+    "folds": "139|26|152|0|\n339|28|452|0|\n",
+    "lastKnownWriteTime": 1742468624,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1742468624791,
+    "read_only": false,
+    "read_only_alternatives": []
+}

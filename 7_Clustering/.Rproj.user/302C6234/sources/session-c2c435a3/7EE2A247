@@ -1,0 +1,28 @@
+{
+    "id": "7EE2A247",
+    "path": null,
+    "project_path": null,
+    "type": "object_explorer",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1744881880678.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "id": "1f5f86a4d1064e3d8713b28861bdc415",
+        "name": "clustc",
+        "title": "clustc",
+        "language": "R",
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 0,
+    "encoding": "",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1744881880678,
+    "read_only": false,
+    "read_only_alternatives": []
+}

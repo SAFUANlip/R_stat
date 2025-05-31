@@ -1,0 +1,28 @@
+{
+    "id": "82373B89",
+    "path": null,
+    "project_path": null,
+    "type": "object_explorer",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1748679671786.0,
+    "source_on_save": false,
+    "relative_order": 6,
+    "properties": {
+        "id": "77e33e5ef7c443d7885250b816ed1e55",
+        "name": "lambda.x_yj",
+        "title": "lambda.x_yj",
+        "language": "R",
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 0,
+    "encoding": "",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1748679671786,
+    "read_only": false,
+    "read_only_alternatives": []
+}

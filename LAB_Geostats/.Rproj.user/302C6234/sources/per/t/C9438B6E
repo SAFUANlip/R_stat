@@ -1,0 +1,26 @@
+{
+    "id": "C9438B6E",
+    "path": "~/R_stat/LAB_Geostats/LAB_Geostats.R",
+    "project_path": "LAB_Geostats.R",
+    "type": "r_source",
+    "hash": "3382276062",
+    "contents": "",
+    "dirty": false,
+    "created": 1747988178951.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "334,36",
+        "scrollLine": "306"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1748004457,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1748004457210,
+    "read_only": false,
+    "read_only_alternatives": []
+}
