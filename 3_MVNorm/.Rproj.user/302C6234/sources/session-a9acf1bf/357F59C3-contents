@@ -1,5 +1,14 @@
+library(MVN) # Can need separate installation of "gsl" software library
+library(car)
+library(mvtnorm)
 
+b <- read.table('data_sim.txt')
+head(b)
+dim(b)
 
+pollution <- read.table('pollution.txt')
+head(pollution)
+dim(pollution)
 
 
 # Define a reusable function to find best normality transform
@@ -25,6 +34,28 @@ find_best_transforms <- function(data) {
     best_transform <- "None"
     best_data <- x
     best_lambda <- NA
+    
+    # Try Box-Cox
+    if (sum(x <= 0)){
+      x_shifted <- x + abs(min(x)) + 1
+      print("Shifted for Box-Cox transform")
+    }
+    else{
+      x_shifted <- x
+    }
+    bc_model <- powerTransform(x_shifted ~ 1, family = "bcPower")
+    if (!is.null(bc_model)) {
+      lambda_bc <- bc_model$lambda
+      x_bc <- bcPower(x_shifted, lambda_bc)
+      p_bc <- tryCatch(shapiro.test(x_bc)$p.value, error = function(e) NA)
+      
+      if (!is.na(p_bc) && p_bc > best_p) {
+        best_p <- p_bc
+        best_transform <- "Box-Cox"
+        best_data <- x_bc
+        best_lambda <- lambda_bc
+      }
+    }
     
     # Try Yeo-Johnson
     yj_model <- tryCatch(powerTransform(x ~ 1, family = "yjPower"), error = function(e) NULL)
@@ -58,3 +89,31 @@ find_best_transforms <- function(data) {
     summary = summary_table
   ))
 }
+
+if (sum(pollution$PM2.5 < 0)){
+  print("Have zero negative values")
+}
+
+if (sum(b$x < 0)){
+  print("Have zero negative values")
+}
+
+transformed_res_b <- find_best_transforms(b)
+transformed_res_b$summary
+
+transformed_res_pollution <- find_best_transforms(pollution)
+transformed_res_pollution$summary
+
+pollution_transformed <- transformed_res_pollution$transformed_data
+
+qqnorm(pollution_transformed$PM2.5)
+qqnorm(pollution_transformed$PM10)
+
+qqnorm(pollution$PM2.5)
+qqnorm(pollution$PM10)
+
+mvn(pollution)
+mvn(pollution_transformed)
+
+qqnorm(transformed_res_b$transformed_data$x)
+qqnorm(transformed_res_b$transformed_data$y)

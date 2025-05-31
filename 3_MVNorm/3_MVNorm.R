@@ -741,6 +741,9 @@ points(x.mean[1], x.mean[2], pch = 16, col = 'red', cex=1.5)
 ellipse(x.mean, shape=x.cov/n, sqrt(cfr.fisher), col = 'red', lty = 2, center.pch = 16)
 rect(T2[1,1], T2[2,1], T2[1,3], T2[2,3], border='red', lwd=2)
 
+# Here we see, that projection doesn't reject H0, (red rectangle contains blue point)
+# But it's just because separetly for x1 and x2 CI weaker, that simulateous CI
+
 # Let's try with Bonferroni intervals
 k <- p # number of intervals I want to compute (set in advance)
 cfr.t <- qt(1-alpha/(2*k), n-1)
@@ -792,6 +795,7 @@ x.mean   <- colMeans(stiff_wo_outliers)
 x.cov    <- cov(stiff_wo_outliers)
 x.invcov <- solve(x.cov)
 
+# it's just dormula of T^2 statistic 
 x.T2     <- n * (x.mean-mu0) %*% x.invcov %*% (x.mean-mu0) 
 
 # 3a) Verify if the test statistics belongs to the acceptance region
@@ -857,7 +861,10 @@ cfr.t <- qt(1 - alpha/(k*2), n-1)
 Bf <- cbind(inf = x.mean - cfr.t*sqrt(diag(x.cov)/n),
             center = x.mean, 
             sup = x.mean + cfr.t*sqrt(diag(x.cov)/n))
-Bf
+
+# Bonferroni has smaller CI
+Bf 
+T2
 
 plot.bonf <- function() {
   # Let's do a plot
@@ -880,3 +887,4 @@ plot.bonf <- function() {
 plot.bonf()
 
 # Yes, it is, because it belongs to all the intervals along the components
+

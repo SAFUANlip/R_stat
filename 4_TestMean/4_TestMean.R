@@ -94,6 +94,7 @@ P
 
 # Ellipsoidal confidence region with confidence level 95%
 plot(D, asp=1, pch=1, main='Dataset of the Differences', ylim=c(-15,60))
+# plottin ellipse, don't forget to divide cov/n
 ellipse(center=D.mean, shape=D.cov/n, radius=sqrt(cfr.fisher), lwd=2)
 
 # Adding delta.0 and the quadrants
@@ -155,6 +156,7 @@ plot.simT2 <- function() {
   segments(0, IC.T2.DSS[1], 0, IC.T2.DSS[3], lty=1,lwd=2, col='red')
 }
 plot.simT2()
+
 
 
 ## Link with univariate test for a linear combination of the mean ------------------------------
@@ -647,7 +649,7 @@ P
 
 # Test for the mean of two independent Gaussian populations -----------------------------------
 
-# two teachers - two classes, one put higher grade, other worse, we want test it - coparing 
+# two teachers - two classes, one put higher grade, other worse, we want test it - comparing 
 # means in each group, it's independents test
 
 # but what if we take same students to be grated - then it will be paired obesrvations 
@@ -756,6 +758,11 @@ x.mean2 <- sapply(noallergy, mean)
 
 p.hat <- (x.mean1 * n1 + x.mean2 * n2) / (n1 + n2) # 
 x.var <- (p.hat * (1 - p.hat)) # pooled variance 
+
+# Если ты делаешь поэлементный анализ (по одной переменной), например,
+# сравнение долей аллергиков и неаллергиков по одному симптому
+# — можно использовать Bernoulli-дисперсию p*(1-p).
+x.var
 
 #
 # Test: H0.i: mu.i1 == mu.i2  vs H1.i: mu.i1 != mu.i2

@@ -1,24 +1,26 @@
 {
-    "id": "48DB53D9",
+    "id": "B35C0ADA",
     "path": "~/R_stat/4_TestMean/Additional_Exercises.R",
     "project_path": "Additional_Exercises.R",
     "type": "r_source",
-    "hash": "3634802890",
+    "hash": "0",
     "contents": "",
     "dirty": false,
-    "created": 1742549610584.0,
+    "created": 1748691832447.0,
     "source_on_save": false,
-    "relative_order": 1,
+    "relative_order": 4,
     "properties": {
         "source_window_id": "",
-        "Source": "Source"
+        "Source": "Source",
+        "cursorPosition": "290,21",
+        "scrollLine": "287"
     },
     "folds": "",
-    "lastKnownWriteTime": 1648390124,
+    "lastKnownWriteTime": 1748723779,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1648390124,
+    "last_content_update": 1748723779393,
     "read_only": false,
     "read_only_alternatives": []
 }
