@@ -122,6 +122,7 @@ IC
 #    estimate point-wise - coherently with the reduced model - the means and
 #    variances of the four possible types of travel.
 
+
 euros <- read.table('time.txt', header=T)
 euros
 attach(euros)
@@ -226,6 +227,7 @@ mCA_Fer  <- m + betaFer
 #    that clarify the conclusions drawn at point (c).
 
 PV <- read.table('PV.txt', header = T)
+attach(PV)
 PV
 
 N <- dim(PV)[1]
@@ -248,7 +250,7 @@ var.risp <- PV[,1:2]
 
 ### question b)
 
-man.int <- manova(as.matrix(var.risp) ~  HPV + REL + HPV * REL, data = PV)
+man.int <- manova(as.matrix(var.risp) ~  HPV + REL + HPV : REL, data = PV)
 summary(man.int, test = 'Wilks')
 
 ### question c)

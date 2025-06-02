@@ -27,6 +27,7 @@ library(fields)
 species.name <- iris[,5]
 iris4        <- iris[,1:4]
 
+
 pairs(iris4, pch=19)
 
 # compute the dissimilarity matrix of the data
@@ -322,10 +323,12 @@ plot3d(Q, size=3, col='orange', aspect = F)
 d <- dist(Q)
 image(as.matrix(d))
 
+# hierarchical clustering 
 clusts <- hclust(d, method='single')
 clusta <- hclust(d, method='average')
 clustc <- hclust(d, method='complete')
-clustw <- hclust(d, method='ward.D2')
+clustw <- hclust(d, method='ward.D2') 
+# costly computation, minimise increase of variance, when I put two clusters together
 
 par(mfrow=c(2,2))
 plot(clusts, hang=-0.1, labels=FALSE, main='single', xlab='', sub='')
@@ -491,8 +494,17 @@ open3d()
 plot3d(Q, size=3, col=result.k$cluster+1, aspect = F) 
 points3d(result.k$centers, size = 10)
 
+# how to choose K - variability in cluster have to be smaller than variability in clusters (elbow point)
+# elbow point - "точка перегиба"
+# can we use just when we have distance matrix - no, because we can not define centroids (we can, bu it will not be classical K-menas)
+# Hierarchihcal matrix - use distance matrix 
+# classiscal K-means work with vectors data 
+# K-means optimize variability between and within, especially if we use euclidian distance
+# but with other distance our "variability" will not be original one 
 
 # DBSCAN --------------------------------------------------------------------------------------
+# Density Based Scan
+# doesn't work well with data with different desity
 
 # Simulate the data
 set.seed(2)
@@ -504,15 +516,18 @@ plot(x, col = true_clusters, pch = 19)
 # Choice of hyperparameters for DBSCAN
 # Rule of thumb, minPts should be at least p + 1 = 3 here
 # Can be eventually increased
-minPts <- 3
+minPts <- 3 # defince our core points
 
 # How to choose eps from minPts?
 # Plot of the distances to the minPts-1 nearest neighbor
-kNNdistplot(x, minPts = minPts)
+kNNdistplot(x, minPts = minPts) # distance to minPts-1 nearest neigbors 
 # Taking eps = 0.05 seems to be a good threshold
+# In hign density, distance will be low 
 abline(h = 0.05, col = "red", lty = 2)
+# as before we look on elbow threshold
 
 # Run the dbscan
+# cluster 0 - noise points, identifyed by DBSCAN 
 dbs <- dbscan(x, eps = 0.05, minPts = 3)
 dbs
 
@@ -617,6 +632,7 @@ plot(moons, pch=19)
 
 minPts = 3 # Dimensionality + 1
 kNNdistplot(moons, minPts = 3)
+
 abline(h = 0.27, col = "red", lty = 2)
 
 eps <- 0.3
@@ -651,7 +667,7 @@ cluster.a <- cutree(hclust.a, k=3) # euclidean-average
 par(mfrow=c(1,3))
 plot(moons, col=cluster.c + 1L, pch=19, main='Complete')
 plot(moons, col=cluster.a + 1L, pch=19, main='Average')
-plot(moons, col=cluster.s + 1L, pch=19, main='Single')
+plot(moons, col=cluster.s + 1L, pch=19, main='Single') # Single some kind of similiar to DBSCAN
 
 # k-means
 
@@ -673,6 +689,10 @@ lines(1:10, w/(w+b), type='b', lwd=2)
 
 k.means <- kmeans(moons, centers = 4, nstart = 25)
 plot(moons, col=k.means$cluster + 1L, pch=19, main='k-means')
+
+# To explain which features most important in clustering
+# I can compute variability for each variable and look 
+# look Fisher discriminat analysis - to check which feature most important 
 
 # Exercises -----------------------------------------------------------------------------------
 
@@ -727,6 +747,8 @@ t2.mean <- sapply(vowels[pag=='2',],mean)
 t1.cov  <-  cov(vowels[pag=='1',])
 t2.cov  <-  cov(vowels[pag=='2',])
 Sp      <- ((n1-1)*t1.cov + (n2-1)*t2.cov)/(n1+n2-2)
+
+Sp
 
 # Test: H0: mu.1-mu.2==0 vs H1: mu.1-mu.2!=0
 delta.0 <- c(0,0,0,0,0)
@@ -1004,6 +1026,9 @@ cov2
 # of the n units are as close as possible to the original distances
 # (dissimilarities) among the n units.
 
+# we had distances - and we find vector representation of our data, so that distances of
+# defined point will be close to source distances
+# like Embedding in ML
 
 # Example : European cities
 help(eurodist)
@@ -1026,7 +1051,7 @@ plot(location[,1], -location[,2], type='n', asp=1, axes=FALSE, main="MDS of Euro
 text(location[,1], -location[,2], labels=colnames(as.matrix(eurodist)), cex = 0.75, pos = 3)
 
 # compare the original matrix d_ij = d(x_i,x_j) and delta_ij = d(y_i,y_j) 
-plot(eurodist, dist(location))
+plot(eurodist, dist(location)) # have to close to line (new distance have to be proportional to source distance)
 
 # visualize the most different distances
 par(cex = 0.75, mar = c(10,10,2,2))

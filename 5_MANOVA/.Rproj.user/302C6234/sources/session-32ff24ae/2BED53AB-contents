@@ -113,7 +113,7 @@ k <- g * (g - 1) / 2
 alpha = 0.05
 
 Mediag  <- tapply(weight, feed, mean) # group-wise means
-SSres <- sum(residuals(fit) ^ 2)
+SSres <- sum(residuals(fit) ^ 2) # we could take it from summary of fit Residuals[Sum Sq]
 S <- SSres / (n - g)
 
 # Example: CI for the difference "casein - horsebean"
@@ -275,12 +275,12 @@ boxplot(iris4[,3]~species.name, main='Petal Length', ylim=c(0,8), col = rainbow(
 boxplot(iris4[,4]~species.name, main='Petal Width', ylim=c(0,8), col = rainbow(3))
 
 
-# if we reject H0 - it's possible just because of one speciic variable, 
+# if we reject H0 - it's possible just because of one specific variable, 
 # we can reject in one specific direction
-# whnever reject H0 => there will be at least one variable 
+# whenever reject H0 => there will be at least one variable 
 
-# performa manov - to check if there are difference
-# but to find which reponse to difference - we use ANOVA test
+# perform MANOVA - to check if there are difference
+# but to find which response to difference - we use ANOVA test
 
 # Model: X.ij = mu + tau.i + eps.ij; eps.ij ~ N_p(0, Sigma), X.ij, mu, tau.i and eps.ij in R^4
 # Test:
@@ -372,7 +372,7 @@ summary.aov(fit)
 
 ### Via Bonferroni
 alpha <- 0.05
-k <- p * g * (g - 1) / 2
+k <- p * g * (g - 1) / 2 # as for ANOVA, but with all "p" variabels
 qT <- qt(1 - alpha / (2 * k), n - g) # n - g -degree of freedom 
 
 W <- summary.manova(fit)$SS$Residuals
@@ -557,7 +557,7 @@ SSbenz  <- sum(n * g * (Mbenz  - M) ^ 2)              # or from the summary: 66.
 SSres <- sum((km - M) ^ 2) - (SSdistr + SSbenz)   # or from the summary: 16.37
 
 Ftot <- ((SSdistr + SSbenz) / (g - 1 + b - 1)) / (SSres / (n * g * b - g - b + 1))
-Ptot      <- 1 - pf(Ftot, (g - 1) + (b - 1), n * g * b - g - b + 1) # attention to the dof!
+Ptot      <- 1 - pf(Ftot, (g - 1) + (b - 1), n * g * b - g - b + 1) # attention to the degree of freedom!
 Ptot
 
 # Test 2bis): there is no evidence that the factor "gas station" has
@@ -572,6 +572,7 @@ fit.aov1 <- aov(km ~ benz)
 summary.aov(fit.aov1)
 
 SSres <- sum(residuals(fit.aov1)^2)
+SSres
 
 ### Interval at 90% for the differences (reduced additive model)
 ### [b=2, thus one interval only]
