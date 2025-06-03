@@ -141,10 +141,10 @@ C <- matrix(
 
 mean_comb <- (m1 - m2) %*% t(C)
 
-WC <- C %*% W %*% t(C)
+WC <- C %*% (W/DF) %*% t(C)
 
-inf12 <- mean_comb - cfr.t * sqrt(diag(WC)/(DF) * (1/n1+1/n2))
-sup12 <- mean_comb + cfr.t * sqrt(diag(WC)/(DF) * (1/n1+1/n2))
+inf12 <- mean_comb - cfr.t * sqrt(diag(WC) * (1/n1+1/n2))
+sup12 <- mean_comb + cfr.t * sqrt(diag(WC) * (1/n1+1/n2))
 
 CI <- list(group12    = cbind(t(inf12), t(mean_comb), t(sup12)))
 CI

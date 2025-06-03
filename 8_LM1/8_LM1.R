@@ -47,9 +47,12 @@ summary(fm) # on p-value, we look only if the data is normal
 # F-statistic (overall significant of model H0 - all betas = 0), 
 # H1 - at least one betta is signifficant
 # Note: colinearity
+# last p-value (H0 - all bettai = 0, H1 at least bettai != 0)
 
 fitted(fm)        # y hat (predicted)
 residuals(fm)     # eps hat (residuals)
+
+distance - fitted(fm)  - residuals(fm) # residuals = y_true - y_predict
 
 coefficients(fm)  # beta_i (intercept - b0)
 vcov(fm)          # cov(beta_i)
@@ -57,17 +60,23 @@ vcov(fm)          # cov(beta_i)
 fm$rank # order of the model [r+1] (r - number of features, +1 - b0)
 fm$df   # degrees of freedom of the residuals [n-(r+1)]
 
-hatvalues(fm) # h_ii (or sometimes called "leverage")
+hatvalues(fm) # h_ii (or sometimes called "leverage effect")
 # how far observation from other observations 
 # They quantify:
 # 1) How far is the i-th observation from the other ones in the features space
 # 2) The influence of the i-th observation on the fit (can be seen as the
 # derivative dyhat_i / dy_i)
 
+# 0 <= hii <= 1 (if hii around 1, then var(eps_i) = 0 => eps_i = 0 (since E(eps_i) = 0))
+# so when hii bif, it's bad, because it doesn't show anything 
+
 # way to work with slight distortion if residuals 
 rstandard(fm) # standardized residuals: eps_j / sqrt(s^2*(1-h_ii))
 
 sum(residuals(fm)^2)/fm$df  # s^2 estimate of sigma^2
+
+residuals(fm)/sqrt(sum(residuals(fm)^2)/fm$df*(1-hatvalues(fm))) - rstandard(fm)
+# correct with formula 
 
 plot(cars, xlab='Speed', ylab='Stopping distance', las=1, xlim=c(0,30), ylim=c(-5,130))
 x <- seq(0,30,by=0.1)
@@ -77,11 +86,12 @@ lines(x, b[1]+b[2]*x+b[3]*x^2)
 
 ## Inference on the parameters ----------------------------------------------------------------
 # Assumption: Eps ~ N(0, sigma^2) -  normality assumtion on residuals
-# Test (Fisher):
+# Test (Fisher): (F-test)
 #   H0: (beta1, beta2) == (0, 0) vs H1: (beta1, beta2) != (0, 0)
 linearHypothesis(fm, rbind(c(0,1,0), c(0,0,1)), c(0,0)) # C-matrix 
 # beta0 * 0 + beta1 * 1 + beta2 * 0 = 0
 # beta0 * 0 + beta1 * 0 + beta2 * 1 = 0
+# это проверяерт чтобы хотя бы один был не равен 0, поэтому только одно p-value
 summary(fm) # p-value < 0.05, so we can say that at least variable significant
 
 p <- 2  # number of tested coefficients
@@ -89,15 +99,15 @@ r <- 2  # number of regressors
 
 # Confidence region:
 # center: point estimate
-c(coefficients(fm)[2], coefficients(fm)[3])
+c(coefficients(fm)[2], coefficients(fm)[3]) 
 # Direction of the axes?
-eigen(vcov(fm)[2:3,2:3])$vectors
+eigen(vcov(fm)[2:3,2:3])$vectors # vcov(fm) - cov(beta_i)
 
 plot(coefficients(fm)[2], coefficients(fm)[3], xlim = c(-6,6), ylim = c(-6,6), asp=1, xlab='beta1', ylab='beta2')
 ellipse(coefficients(fm)[2:3], vcov(fm)[2:3,2:3], sqrt(p*qf(1-0.05,p,n-(r+1))))
 abline(v=0)
 abline(h=0)
-# Note: colinearity!
+# Note: colinearity! (because ellipse flat) (our features dependent, especially in case when we look only on some train sample)
 # ellipse doesnt'tt contain  (0,0), so we reject H0, but if we will project on beta1 or beta2,
 # then we get that it contain 0, so independatly this variabels don't have effect on target, but together
 # they are
@@ -117,21 +127,31 @@ confint(fm, level= 1-0.05/p)[2:3,]  # Bonferroni correction!
 # Note: confint() returns the confidence intervals one-at-a-time;
 # to have a global level 95% we need to include a correction
 
-### Test:
+### Test: (restricted model) - ограниченная модель 
 # H0: (beta0+beta2, beta1) == (0,0) vs H1: (beta0+beta2, beta1) != (0,0)
 C <- rbind(c(1,0,1), c(0,1,0))
 linearHypothesis(fm, C, c(0,0))
 
 # Homework
 # Build the associated confidence region
+coefC <- C %*% coefficients(fm)
+vcovC <- C %*% vcov(fm) %*% t(C)
+
+plot(coefC[1], coefC[2], xlim = c(-6,6), ylim = c(-6,6), asp=1, xlab='beta1', ylab='beta2')
+ellipse(c(2.5700971, 0.9132876), vcovC, sqrt(2*qf(1-0.05, 2, n-(r+1))))
+
 
 # Confidence intervals for the mean
 # & prediction (new obs)
 # Assumption: Eps ~ N(0, sigma^2)
 
+new <- data.frame(speed1 = 10, speed2 = 100)
+predict(fm, new, interval="confidence")  # доверительный интервал для E[Y | X]
+predict(fm, new, interval="prediction")  # предиктивный интервал для нового Y
+
 
 ## Prediction ---------------------------------------------------------------------------------
-# confidence interval - confidence intrval for mean of the new observation,
+# confidence interval - confidence interval for mean of the new observation,
 # what is the confidence interval for mean
 # prediction interval - look on uncertanty of estimation of mean and uncertantiy coused by residuals 
 # so if we want just CI for mean - we use CI of means 
@@ -190,7 +210,7 @@ plot(fm)
 # Q-Q Residuals - to check residuals normality
 # Residuals vs Leverage - if we have small standartised residuals => we have influences
 # to our linear model,
-# Cook distance (was on lecture) - how influence this observation to model
+# Cook distance (was on lecture) - how influence this observation to model (если какие-то residuals лежат вне региона)
 # if this distance > 1 => our prediction completely depends on observation (strong outlier)
 # red line - moving average
 # NON centered residual - more important problem
@@ -213,6 +233,66 @@ speed2.kmh2     <- cars$speed^2 * 1.6^2
 #   H0: (beta1, beta2) == (0,0) vs H1: (beta1, beta2) != (0,0)
 #   H0: (beta0+beta2, beta1) == (0,0) vs H1: (beta0+beta2, beta1) != (0,0)
 
+fm_m <- lm(distance.m ~ speed1.kmh + speed2.kmh2)
+summary(fm_m) # same p-values, as before
+
+linearHypothesis(fm_m, rbind(c(0,1,0), c(0,0,1)), c(0,0)) # C-matrix 
+# beta0 * 0 + beta1 * 1 + beta2 * 0 = 0
+# beta0 * 0 + beta1 * 0 + beta2 * 1 = 0
+summary(fm_m) # p-value < 0.05, so we can say that at least variable significant
+
+p <- 2  # number of tested coefficients
+r <- 2  # number of regressors
+
+# Confidence region:
+# center: point estimate
+c(coefficients(fm_m)[2], coefficients(fm_m)[3]) 
+# Direction of the axes?
+eigen(vcov(fm_m)[2:3,2:3])$vectors # vcov(fm) - cov(beta_i)
+
+plot(coefficients(fm_m)[2], coefficients(fm_m)[3], xlim = c(-6,6), ylim = c(-6,6), asp=1, xlab='beta1', ylab='beta2')
+ellipse(coefficients(fm_m)[2:3], vcov(fm_m)[2:3,2:3], sqrt(p*qf(1-0.05,p,n-(r+1))))
+abline(v=0)
+abline(h=0)
+
+Bf <- rbind(
+  beta1=c(coefficients(fm_m)[2]-sqrt(vcov(fm_m)[2,2])*qt(1-0.05/(2*p), n-(r+1)),
+          coefficients(fm_m)[2]+sqrt(vcov(fm_m)[2,2])*qt(1-0.05/(2*p), n-(r+1))),
+  beta2=c(coefficients(fm_m)[3]-sqrt(vcov(fm_m)[3,3])*qt(1-0.05/(2*p), n-(r+1)),
+          coefficients(fm_m)[3]+sqrt(vcov(fm_m)[3,3])*qt(1-0.05/(2*p), n-(r+1)))
+)
+Bf
+
+# or (only for intervals on beta)
+confint(fm_m, level= 1-0.05/p)[2:3,]  # Bonferroni correction!
+
+# Note: confint() returns the confidence intervals one-at-a-time;
+# to have a global level 95% we need to include a correction
+
+### Test: (restricted model) - ограниченная модель 
+# H0: (beta0+beta2, beta1) == (0,0) vs H1: (beta0+beta2, beta1) != (0,0)
+C <- rbind(c(1,0,1), c(0,1,0))
+linearHypothesis(fm_m, C, c(0,0))
+
+# Homework
+# Build the associated confidence region
+coefC <- C %*% coefficients(fm_m)
+vcovC <- C %*% vcov(fm_m) %*% t(C)
+
+plot(coefC[1], coefC[2], xlim = c(-6,6), ylim = c(-6,6), asp=1, xlab='beta1', ylab='beta2')
+ellipse(c(coefC[1], coefC[2]), vcovC, sqrt(2*qf(1-0.05, 2, n-(r+1))))
+
+
+# Confidence intervals for the mean
+# & prediction (new obs)
+# Assumption: Eps ~ N(0, sigma^2)
+
+new <- data.frame(speed1 = 10*1.6, speed2 = 100*1.6^2)
+predict(fm, new, interval="confidence", level=1-0.05)  # доверительный интервал для E[Y | X]
+predict(fm, new, interval="prediction", level=1-0.05)
+
+# everuthing looks same as before, just smaller (becaue linear model without regularisation doesn't depend on feature sclae)
+
 # Example 2: Anscombe -------------------------------------------------------------------------
 # This example shows some cases for which examining data and 
 # residuals is crucial (don't look at R2 only!)
@@ -226,7 +306,7 @@ attach(anscombe)
 
 # dataset 1
 lm1 <- lm(y1~ x1)
-summary(lm1)
+summary(lm1) # look, total p-value same as p-value for betta1, because we can check assumtion only about bett1 = 0
 
 # dataset 2
 lm2 <- lm(y2~ x2)
@@ -452,6 +532,7 @@ par(mfrow=c(2,2))
 plot(fitd)
 
 shapiro.test(rstandard(fitd))
+# shapiro.test(fitd$residuals)
 
 # test: are the two planes needed?
 A <- rbind(c(0,0,0,1,0,0), c(0,0,0,0,1,0), c(0,0,0,0,0,1))
@@ -471,10 +552,12 @@ summary(fitd)
 #      B0[g]=beta0+beta3 if the unit is in group s.t. dummy=1 (green)
 #      B1=beta1
 #      B2[g]=beta2       if the unit is in group s.t. dummy=0 (red)
-#      B2[g]=beta2+beta5 if the unit is in group s.t. dummy=1 (green)
+#      B2[g]=beta2+beta4 if the unit is in group s.t. dummy=1 (green)
 
 fitD <- lm(depth ~ lat + long + dummy + long:dummy, data=Qd)
 summary(fitD)
+
+p.adjust(summary(fitD)$coefficients[, 4], method = "bonferroni")
 
 # Fitted model
 open3d()
@@ -501,6 +584,23 @@ shapiro.test(rstandard(fitD))
 # Q1: are the quadratic terms needed?
 # Q2: is the latitude needed?
 # Q3: is the longitude needed?
+
+fitQ <- lm(depth ~ lat + long + I(lat^2) + I(long^2) + lat:long, data=Qd)
+summary(fitQ)
+fitQ$coefficients
+
+# test: are the two planes needed?
+AQ <- rbind(c(0, 0,0,1,0,0), c(0, 0,0,0,1,0))
+bQ <- c(0,0)
+linearHypothesis(fitQ, AQ, bQ) # p-value < 0.05 so qadratic terms needed
+
+Alat <- rbind(c(0, 1,0,0,0,0) )
+blat <- c(0)
+linearHypothesis(fitQ, Alat, blat) # p-value < 0.05 so lat and long needed 
+
+Along <- rbind(c(0, 0,1,0,0,0) )
+blong <- c(0)
+linearHypothesis(fitQ, Along, blong)
 
 
 # Example 5: Bias-variance trade-off ----------------------------------------------------------
