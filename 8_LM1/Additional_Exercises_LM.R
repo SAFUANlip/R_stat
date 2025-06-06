@@ -6,7 +6,7 @@ library(car)
 #_______________________________________________________________________________
 ##### Problem 2 of 28/2/2007
 #####--------------------------------------
-# Pb2.txt dataset shows average monthly temperature (°C) recorded in
+# Pb2.txt dataset shows average monthly temperature (?C) recorded in
 # 2006 in three Canadian locations: Edmonton, Montreal and Resolute.
 # It is common in meteorology to assume that the average monthly 
 # temperatures fluctuate sinusoidally around an annual average value:
@@ -199,12 +199,12 @@ detach(index)
 ##### Problem 4 of 4/7/2007
 #####-------------------------
 # At the Tenaris steel mills, the relationship between length [m] and
-# Temperature [°C] of some steel bars that will be sold to Pirelli
+# Temperature [?C] of some steel bars that will be sold to Pirelli
 # is under study (the data are contained in tenaris.txt file). The relation
 # is hypothesized of the kind:
 #   L = L0 + C* T + D  * T ^ 2 + eps
 # with L the length of the bar, T the temperature of the bar, L0 the length 
-# of the bar at 0 °C, C the coefficient of of linear thermal expansion, D
+# of the bar at 0 ?C, C the coefficient of of linear thermal expansion, D
 # the coefficient of quadratic thermal expansion and eps a measurement error
 # of zero mean.
 # Answer the following questions using appropriate statistical arguments:
@@ -215,7 +215,7 @@ detach(index)
 #    identify the problem, remove it and return to point (a))
 # c) Do you think that the model explains the possible dependence between 
 #    the temperature T and the length L?
-# d) do you deem plausible to consider that the length of the bars at 0 °C
+# d) do you deem plausible to consider that the length of the bars at 0 ?C
 #    is equal to 2?
 # E) do you think that you can eliminate from the model the quadratic term?
 
@@ -340,6 +340,7 @@ summary(fit.red)
 
 # e)
 C <- rbind(c(1,0,0), c(1,1,0), c(1,1,1))
+qt_val <- qt(1 - 0.10 / (2*4), df = n - p)
 
 Bf <- rbind(
   c((C %*% coefficients(fit.red))[1] - sqrt((C %*% vcov(fit.red) %*% t(C))[1,1]) * qt(1 - 0.10/6, n-3),
@@ -349,3 +350,4 @@ Bf <- rbind(
   c((C %*% coefficients(fit.red))[3] - sqrt((C %*% vcov(fit.red) %*% t(C))[3,3]) * qt(1 - 0.10/6, n-3),
     (C %*% coefficients(fit.red))[3] + sqrt((C %*% vcov(fit.red) %*% t(C))[3,3]) * qt(1 - 0.10/6, n-3))
 )
+Bf

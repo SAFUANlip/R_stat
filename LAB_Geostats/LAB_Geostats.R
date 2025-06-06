@@ -186,7 +186,7 @@ vgm(0.5, "Nug", 0)
 ## 3) fit the model using one of the possible fitting criteria
 
 v <- variogram(log(zinc) ~ 1, meuse)
-
+v
 plot(v,pch=19)
 # Linear behavior near the origin, growth not very fast 
 # Recall: both spherical and exponential model have a linear behavior near the
@@ -207,14 +207,20 @@ v <- variogram(log(zinc) ~ 1, meuse)
 v.fit <- fit.variogram(v, vgm(1, "Sph", 800, 1))
 plot(v, v.fit, pch = 19)
 
+v.fit
 # fitting method: non linear regression with minimization of weighted
 # sum of squares error. final value of the minimum
 attr(v.fit, 'SSErr')
+# WEIGHTS during fitting -------------------------------------------------------
 # how can we choose weights? argument fit.method in fit.variogram
 # fit.method = 1 : w = N_j
 # fit.method = 2 : w = N_j/gamma(h_j)^2
 # fit.method = 6 : w = 1
 # fit.method = 7 : w = N_j/h_j^2
+# Nj — количество пар точек, попавших в лаг hj (имеющих расстояние hj)
+# Например, если лаг 0.1 включает все точки, находящиеся на расстоянии от 0.05 до 0.15, и таких пар 35, то Nj = 35
+
+
 
 # one can also keep one of the parameters fixed, and fit only the others.
 # this is common for the nugget parameter, which may be hard to infer from data
@@ -222,8 +228,10 @@ attr(v.fit, 'SSErr')
 # measurement error characteristics for a specific device.
 
 # ex: fix the nugget variance to the value 0.06
-fit.variogram(v, vgm(1, "Sph", 800, 0.06), fit.sills = c(FALSE, TRUE))
+fit.variogram(v, vgm(1, "Sph", 800, 0.06), fit.sills = c(FALSE, TRUE)) # first correspnd to nugget, second for spherical model
 # the range parameters can be fixed using argument fit.ranges
+fit.variogram(v, vgm(1, "Sph", 800, 0.06), fit.sills = c(TRUE, TRUE))
+fit.variogram(v, vgm(1, "Sph", 800, 0.06), fit.sills = c(TRUE, FALSE))
 
 ## maximum likelihood fitting of variogram models
 ## - does not need the sample variogram
@@ -234,7 +242,7 @@ v.fit
 
 
 ## modeling anisotropy*
-v.dir <- variogram(log(zinc)~1,meuse,alpha=(0:3)*45) 
+v.dir <- variogram(log(zinc)~1, meuse, alpha=(0:3)*45) 
 v.anis <- vgm(.6, "Sph", 1600, .05, anis=c(45, 0.3))
 
 print(plot(v.dir, v.anis, pch=19))
@@ -364,7 +372,7 @@ spplot(lz.uk.BLUE[,1], main = 'Universal Kriging - drift , gstat')
 
 # kriging to gls estimation of a0 + a1*sqrt(dist) and ... 
 
-# when we add non stationary part, wnd we see diffenrecamong variograms ->
+# when we add non stationary part, and we see diffenrecamong variograms ->
 # then we have effect of our non stationary part 
 
 # Is the drift important to explain the variability of the response variable?
@@ -461,7 +469,7 @@ v.fit1
 g.t <- gstat(formula = f ~ D, data = data, model = v.fit2)
 
 D.s0=0.1970
-s0=as.data.frame(matrix(c(0.3,0.24,D.s0),1,3))
+s0=as.data.frame(matrix(c(0.3, 0.24, D.s0),1,3))
 names(s0)=c('X','Y','D')
 coordinates(s0)=c('X','Y')
 
@@ -567,6 +575,8 @@ s0.new <- as.data.frame(matrix(c(77.69,34.99,1),1,3))
 names(s0.new) <- c('lon','lat','D')
 coordinates(s0.new) <- c('lon','lat')
 predict(g.tr, s0.new)
+
+
 
 
 

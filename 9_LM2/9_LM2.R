@@ -12,6 +12,7 @@ library(car)
 library(rgl)
 library(glmnet) # to use LASSO
 
+
 options(rgl.printRglwidget = TRUE)
 
 
@@ -110,7 +111,7 @@ beta1 <- coefficients(fm.pc)[2]*speed.pc$load[1,1]
 beta2 <- coefficients(fm.pc)[2]*speed.pc$load[2,1]
 
 c(beta0=as.numeric(beta0),beta1=as.numeric(beta1),beta2=as.numeric(beta2))
-fm$coefficients
+fm.pc$coefficients
 # if want just estimate coefficients, it's complicated if we have high correlation
 
 plot(sp1.pc,distance, xlab='PC1', ylab='Stopping distance', las=1, xlim=c(-250,361), ylim=c(-5,130))
@@ -277,6 +278,7 @@ optlam.lasso
 plot(cv.lasso)
 abline(v=log(bestlam.lasso), lty=1)
 abline(v=log(optlam.lasso), lty=1) # optimal lambda, penalysing model, but still having good MSE
+# we will use lambda, still lying in CI of MSE, but having more regularisation 
 
 # Get the coefficients for the optimal lambda
 coef.lasso <- predict(fit.lasso, s=bestlam.lasso, type = 'coefficients')[1:3,]
@@ -325,6 +327,7 @@ result.pc$load
 # Explained variance
 layout(matrix(c(2,3,1,3),2,byrow=T))
 barplot(result.pc$sdev^2, las=2, main='Principal Components', ylab='Variances')
+
 barplot(c(sd(Alluminium),sd(Silicate),sd(Alluminium_ferrite),sd(Silicate_bicalcium))^2, las=2, main='Original variables', ylab='Variances')
 plot(cumsum(result.pc$sdev^2)/sum(result.pc$sde^2), type='b', axes=F, xlab='number of components', ylab='contribution to the total variance', ylim=c(0,1))
 abline(h=1, col='blue')
@@ -439,6 +442,7 @@ abline(v=log(optlam.ridge))
 fit.lasso <- glmnet(x,y, lambda = lambda.grid, alpha=1) # alpha=1 -> lasso 
 
 plot(fit.lasso,xvar='lambda',label=TRUE, col = rainbow(dim(x)[2]))
+
 legend('topright', dimnames(x)[[2]], col =  rainbow(dim(x)[2]), lty=1, cex=1)
 
 norm_l1 <- NULL

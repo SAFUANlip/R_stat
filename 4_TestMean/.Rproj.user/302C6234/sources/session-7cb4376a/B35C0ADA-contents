@@ -139,6 +139,9 @@ t.M
 P   <- (1 - pt(t.M, n-1))*2
 P
 
+t.test(mobile[,2], 3*mobile[,1])
+t.test(M)
+
 # or: (it is exactly analogous)
 a <- c(-3, 1)
 t.M.bis <- abs(x.mean%*%a)/sqrt((t(a)%*%x.cov%*%a)/n)

@@ -105,8 +105,15 @@ eigen(vcov(fm)[2:3,2:3])$vectors # vcov(fm) - cov(beta_i)
 
 plot(coefficients(fm)[2], coefficients(fm)[3], xlim = c(-6,6), ylim = c(-6,6), asp=1, xlab='beta1', ylab='beta2')
 ellipse(coefficients(fm)[2:3], vcov(fm)[2:3,2:3], sqrt(p*qf(1-0.05,p,n-(r+1))))
+ellipse(coefficients(fm)[2:3], rbind(c(1, 0.9),
+                                     c(0.9, 1)), sqrt(p*qf(1-0.05,p,n-(r+1))))
 abline(v=0)
 abline(h=0)
+
+vcov(fm)[2:3,2:3]
+eigen(vcov(fm)[2:3,2:3])
+eigen(rbind(c(0.5, 0.9),
+            c(0.9, 0.5)))
 # Note: colinearity! (because ellipse flat) (our features dependent, especially in case when we look only on some train sample)
 # ellipse doesnt'tt contain  (0,0), so we reject H0, but if we will project on beta1 or beta2,
 # then we get that it contain 0, so independatly this variabels don't have effect on target, but together

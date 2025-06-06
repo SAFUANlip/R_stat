@@ -147,7 +147,7 @@ people <- read.table("people.txt", h=TRUE)
 
 plot(people)
 
-fit_people <- lm(mese ~ rifiuti + I(1-cos(2*pi/12*rifiuti)), data=people)
+fit_people <- lm(rifiuti ~ mese + I(1-cos(2*pi/12*mese)), data=people)
 summary(fit_people)
 
 # a)
@@ -174,18 +174,196 @@ summary(fit_people)
 A_tourists <- rbind(c(0,0,1))
 b_tourists <- c(0)
 linearHypothesis(fit_people, A_tourists, b_tourists)
-# So we don't see statistical evidence of a significant contribution by tourists
+# So we see statistical evidence of a significant contribution by tourists
 
 # d) increase by 10 tons each month => betta1 = 10?
 A_10 <- rbind(c(0,1,0)) # H0: betta1 = 10, H1: betta1 != 10
 b_10 <- c(10)
-linearHypothesis(fit_people, A_10, b_10) # so we can reject H0, and 
-# increasing goes not by 10
+linearHypothesis(fit_people, A_10, b_10) # so we can not reject H0, and 
+# increasing goes by 10
+
+# e) 
+
+fit_people_e <- lm(rifiuti ~ I(10*mese) + I(1-cos(2*pi/12*mese)), data=people)
+summary(fit_people_e)
+
+# f) On the basis of model (e), provide three pointwise forecasts for the
+#    waste that will be collected in June 2011, for the waste that will be
+#    collected in June 2011 due to residents and that which will be collected
+#    in June 2011 due to the tourists.
+
+# by default will be collected 
+fit_people_e$coefficients[1]
+
+# by residents
+fit_people_e$coefficients[2] * 30*10
+
+# by tourists
+fit_people_e$coefficients[3] * (1-cos(2*pi/12*30))
+
+
+# correct (by GPT, seminar solution differnet) point e)
+people$t_residents <- 10 * people$mese
+
+fit_people_e <- lm(rifiuti ~ t_residents + I(1 - cos(2 * pi / 12 * mese)), data = people)
+summary(fit_people_e)
+
+# correct (by GPT, seminar solution differnet) point f)
+t_pred <- 30
+A_hat <- fit_people_e$coefficients[1]
+C_hat <- fit_people_e$coefficients[3]
+
+seasonal_component <- 1 - cos(2 * pi / 12 * t_pred)
+
+# f1. Total waste forecast
+Y_total <- A_hat + 10 * t_pred + C_hat * seasonal_component
+
+# f2. Waste from residents
+Y_residents <- 10 * t_pred
+
+# f3. Waste from tourists
+Y_tourists <- C_hat * seasonal_component
+
+# Print all
+cat("Total waste (June 2011):", Y_total, "\n")
+cat("Residents' contribution:", Y_residents, "\n")
+cat("Tourists' contribution:", Y_tourists, "\n")
+
+#_______________________________________________________________________________
+##### Problem 4 of 4/7/2007
+#####-------------------------
+# At the Tenaris steel mills, the relationship between length [m] and
+# Temperature [?C] of some steel bars that will be sold to Pirelli
+# is under study (the data are contained in tenaris.txt file). The relation
+# is hypothesized of the kind:
+#   L = L0 + C* T + D  * T ^ 2 + eps
+# with L the length of the bar, T the temperature of the bar, L0 the length 
+# of the bar at 0 ?C, C the coefficient of of linear thermal expansion, D
+# the coefficient of quadratic thermal expansion and eps a measurement error
+# of zero mean.
+# Answer the following questions using appropriate statistical arguments:
+# a) Estimate the parameters L0, C, D and the variance of error eps.
+# b) Based on the analysis of residuals, do you think that there are the
+#    conditions to make inference on the coefficients based on a Gaussian
+#    model? (In case of Yes proceed to step (c); in case of negative answer
+#    identify the problem, remove it and return to point (a))
+# c) Do you think that the model explains the possible dependence between 
+#    the temperature T and the length L?
+# d) do you deem plausible to consider that the length of the bars at 0 ?C
+#    is equal to 2?
+# E) do you think that you can eliminate from the model the quadratic term?
 
 
 
 
+#_______________________________________________________________________________
+##### Problem 4 of 09/09/2009
+#####--------------------------------------
+# A zoologist is studying the temporal evolution of the height of a new breed
+# of goat (dataset goat.txt). Using an exponential growth model for the i-th 
+# individual of the following type: 
+# h_i = A + B (1 - exp(-t_i)) + C eps_i, 
+# with: 
+# h_i = the height of the individual [cm],
+# t_i = the age of the individual [years], 
+# eps_i = a random term distributed according to a standard normal distribution, 
+# A and B = parameters exclusively dependent on the gender of the individual, 
+# C = a parameter  equal for the whole population.
+# a) Estimate with the least squares method the 5 parameters of the model.
+# b) On the basis of model (a), is there statistical evidence that the mean 
+#    height at birth (t=0) is different between males and females?
+# c) On the basis of model (a), is there statistical evidence that the mean 
+#    height at adulthood (t=+inf) is different between males and females?
+# d) On the basis of tests (b) and (c), implement an appropriate reduced model and 
+#    estimate its parameters.
+# e) On the basis of the reduced model (d), provide confidence intervals of global 
+#    confidence 90% for the mean height at birth and at adulthood of males and females.
 
 
+goat <- read.table('goat.txt', h=TRUE)
 
+# я не понял как можно было догодаться до этой модели (может по числу параметров...)
+fit <- lm(height ~ gender + I(1 - exp(-age)) + I(1 - exp(-age)):gender, data=goat)
+summary(fit)
+
+# a)
+fit$coefficients
+
+# b) when t = 0, we have height ~ gender + eps, so we have to check if there are. significance
+# of this coefficent
+A0 <- rbind(
+  c(0,1,0,0)
+  )
+b0 <- c(0)
+linearHypothesis(fit, A0, b0) # so we can not reject H0 of betta - gender  = 0, that means it unsignifficant feature
+
+# c) I(1 - exp(-age)) - goes to one, I(1 - exp(-age)):gender - will depend on gender, so we have to check this and gender coefficeinte
+Ainf <- rbind(
+  c(0,1,0,1)
+)
+binf <- c(0)
+linearHypothesis(fit, Ainf, binf) #
+
+
+# d) impement reduced model (we can ignore gender, due to it don't reject H0 of zero coefficient)
+fit_reduced <- lm(height ~I(1 - exp(-age)) + I(1 - exp(-age)):gender, data=goat)
+summary(fit_reduced)
+
+# e)
+alpha <- 0.1
+k <- 4
+
+new_obs_young_male <- data.frame(
+  age = 0,
+  gender="male"
+)
+
+new_obs_young_female <- data.frame(
+  age = 0,
+  gender="female"
+)
+
+new_obs_adult_male <- data.frame(
+  age = 10,
+  gender="male"
+)
+
+new_obs_adult_female <- data.frame(
+  age = 10,
+  gender="female"
+)
+
+predict(fit, new_obs_young_male,  interval="confidence", level=1-alpha/k)
+predict(fit, new_obs_young_female,  interval="confidence", level=1-alpha/k)
+predict(fit, new_obs_adult_male,  interval="confidence", level=1-alpha/k)
+predict(fit, new_obs_adult_female,  interval="confidence", level=1-alpha/k)
+
+# solution of point e) (I changed C matrix)
+C <- rbind(
+  c(1, 0, 0),  # t=0, young female     
+  c(1, 1, 0),  # t=0, adult female   
+  c(1, 0, 1),  # t=inf, young male
+  c(1, 1, 1)   # t=inf, adult male
+)
+
+mu_hat <- C %*% coef(fit_reduced)
+se <- sqrt(diag(C %*% vcov(fit_reduced) %*% t(C)))
+
+qt_val <- qt(1 - 0.10 / (2*4), df = n - length(fit_reduced$coefficients))  # делим на 2 для двустороннего
+
+CI <- cbind(mu_hat - qt_val * se,
+            mu_hat + qt_val * se)
+
+CI # last column = 0 means female => so we make CI for females, zero in second columns means young,
+# because when age = 0, we get 0 coefficient
+# .......... SMTH .........
+Bf <- rbind(
+  c((C %*% coefficients(fit.red))[1] - sqrt((C %*% vcov(fit.red) %*% t(C))[1,1]) * qt(1 - 0.10/6, n-3),
+    (C %*% coefficients(fit.red))[1] + sqrt((C %*% vcov(fit.red) %*% t(C))[1,1]) * qt(1 - 0.10/6, n-3)),
+  c((C %*% coefficients(fit.red))[2] - sqrt((C %*% vcov(fit.red) %*% t(C))[2,2]) * qt(1 - 0.10/6, n-3),
+    (C %*% coefficients(fit.red))[2] + sqrt((C %*% vcov(fit.red) %*% t(C))[2,2]) * qt(1 - 0.10/6, n-3)),
+  c((C %*% coefficients(fit.red))[3] - sqrt((C %*% vcov(fit.red) %*% t(C))[3,3]) * qt(1 - 0.10/6, n-3),
+    (C %*% coefficients(fit.red))[3] + sqrt((C %*% vcov(fit.red) %*% t(C))[3,3]) * qt(1 - 0.10/6, n-3))
+)
+Bf
 
