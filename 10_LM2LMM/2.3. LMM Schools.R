@@ -53,6 +53,8 @@ str(school)
 summary(school)
 sd(school$achiev)
 
+sqrt(var(school$achiev))
+
 # Achievement variability in primary schools
 
 x11()
@@ -74,6 +76,8 @@ ggplot(data=school, aes(x=as.factor(school_id), y=achiev, fill=as.factor(school_
 
 # MODEL: achiev_i = beta_0 + beta_1*gender_i+ beta_2*escs_i + eps_i
 # eps_i ~ N(0, sigma2_eps)
+
+# lm1 <- lm(achiev ~ 1+gender+escs, data=school)
 
 lm1 = lm(achiev ~ gender + escs, data = school)
 summary(lm1)
@@ -97,6 +101,9 @@ boxplot(lm1$residuals ~ school$school_id, col='orange', xlab='School ID', ylab='
 # eps_ij ~ N(0, sigma2_eps)
 # b_i ~ N(0, sigma2_b) - random intercept by schools 
 
+lmm1_lme <- lme(achiev ~ 1 + gender + escs, random = ~1|school_id, data = school)
+summary(lmm1_lme)
+
 lmm1 = lmer(achiev ~ gender + escs + (1|school_id), 
                       data = school)
 summary(lmm1)
@@ -105,6 +112,7 @@ summary(lmm1)
 # Fixed Effects and 95% CIs
 #-------------------------------
 confint(lmm1, oldNames=TRUE)
+intervals(lmm1_lme)
 fixef(lmm1)
 
 # The fixed effects tell us there is a negative effect of being male on achievement, 
@@ -122,6 +130,8 @@ fixef(lmm1)
 
 print(vc <- VarCorr(lmm1), comp = c("Variance", "Std.Dev."))
 help(get_variance)
+
+get_variance(lmm1_lme) # also work with lme models
 
 sigma2_eps <- as.numeric(get_variance_residual(lmm1))
 sigma2_eps

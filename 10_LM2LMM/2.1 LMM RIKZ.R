@@ -49,7 +49,6 @@ plot(ranef(Mlme1))
 # average around 0, but there are effect
 
 
-
 F0 <- fitted(Mlme1, level = 0)
 F1 <- fitted(Mlme1, level = 1)
 I <- order(RIKZ$NAP); NAPs <- sort(RIKZ$NAP)

@@ -85,7 +85,7 @@ update(bw1, xlim = xlims, pch = "|")
 # y ~ x1                  # Univariate linear regression 
 # formula(y ~ x1)         # ... equivalent specification
 
-# y ~ 1 + x1              # Explicit indication for inclusion of an intercept (default) # короче добавление betta0
+# y ~ 1 + x1              # Explicit indication for inclusion of an intercept (default) # короче добавление betta0 (хотя оно там есть по умолчанию)
 # y ~ -1 + x1             # Exclusion of the intercept using term -1 # убрать betta0 из модели 
 
 # Employing nonessential operators
@@ -122,10 +122,17 @@ update(bw1, xlim = xlims, pch = "|")
 # To obtain timepoint-specific intercepts at 4,12,24 and 52 weeks, 
 # the overall intercept is removed from the model by specifying the -1 term.
 
-lm6.1 <- lm(visual ~ -1 + visual0 + time.f + treat.f:time.f, data = armd )
+# -1 + time.f - factor of time (b_0t) (firstly remove common intercept and then get four intercepts fro each time)
+# visual0 - b1
+# time.f:treat.f - b_2t (depends on time and treatment effect)
+lm6.1 <- lm(visual ~ -1 + time.f + visual0 + time.f:treat.f, armd)
 summary(lm6.1)
 
-# variance-covariance matrix of Y  --> it is a diagonal matrix with a value of 12.38^2
+lm6.1 <- lm(visual ~ -1 + visual0 + time.f + treat.f:time.f, data = armd)
+summary(lm6.1)
+
+# variance-covariance matrix of Y  --> it is a diagonal matrix with a value of 12.38^2 
+# (look on summary of "Residual standard error:")
 par(mar = c(4,4,4,4))
 plot(diag(x=12.38^2,nrow=12, ncol=12), main='Variance-covariance matrix of Y')
 
@@ -136,7 +143,7 @@ abline(h=0)
 qqnorm(lm6.1$residuals) # shapiro test sensitive to high number of observations, so if we have many value - then more probably p-valu < 0.05
 qqline(lm6.1$residuals) # so looking on qqplot we can say, the there are something unusual with variability 
 
-shapiro.test(lm6.1$residuals)
+shapiro.test(lm6.1$residuals) # and we may see, that residuals anre not normal
 
 ## But we know that observations are not independent 
 ## and that the variance of the visual measurements increases in time
@@ -154,13 +161,14 @@ boxplot(lm6.1$residuals ~ armd$subject, col=colori,
 
 ## let's color the residuals relative to different time instants
 set.seed(1)
-colori =rainbow(4)
+colori = rainbow(4)
 colori2 = colori[armd$tp] # associate to each one of the 4 time instants a color
 plot(lm6.1$residuals, col=colori2, ylab='residuals')
 abline(h=0)
 legend(650, -25, legend=c("time 4wks", "time 12wks", "time 24wks", "time 52wks"),
        col=colori, lty=1, cex=0.8)
 # we can see, that time 52 weeks have higher variability 
+# and lover in 4 weeks
 
 ## Note: we observe that red points are the closest to 0, purple ones are the farthest
 ## We expect the residuals to be heterogeneous across different time instants observations
@@ -222,11 +230,13 @@ summary(fm9.0) # even if p-value of coefficient > 0.05 - we can not just remove 
 
 
 anova(fm6.1, fm9.0) # we can compare the models to see which one is better (lower AIC) (Akaike information criterion)
+# lower AIC (Akaike information criterion) pr lower BIC => better model
+
 
 # Visualization of variance-covariance matrix of Y (12 observations, 3 patients)
 par(mar = c(4,4,4,4))
 plot(diag(x=c(  4 * 3.222976^2, # v_i * sigma^2 # sigma - residuals standart error
-               12 * 3.222976^2, 
+               12 * 3.222976^2, # Residual standard error: 3.222976 
                24 * 3.222976^2, 
                52 * 3.222976^2), nrow=12, ncol=12),
      main='Variance-covariance matrix of Y - VarIdent() - Model 9.0')
@@ -235,12 +245,10 @@ plot(diag(x=c(  4 * 3.222976^2, # v_i * sigma^2 # sigma - residuals standart err
 # another example
 # we suppose that the variance is proportional to 1/visual0 
 fm9.0b <- gls(visual ~ -1 + visual0 + time.f + treat.f:time.f, 
-              weights = varFixed(value = ~I(1/visual0)), data = armd)
+              weights = varFixed(value = ~(1/visual0)), data = armd)
 summary(fm9.0b)
 
 anova(fm6.1, fm9.0, fm9.0b)
-
-
 
 #### 2.1 Option 2: VarIdent() ####
 
@@ -257,7 +265,7 @@ intervals(fm9.1, which = "var-cov")  ## 95% CI
 # Visualization of Variance-covariance matrix of Y (12 observations, 3 patients)
 par(mar = c(4,4,4,4))
 plot(diag(x=c(1.000000^2*8.244094^2,  # delta_t^2 * sigma^2
-              1.397600^2*8.244094^2, 
+              1.397600^2*8.244094^2,  # Residual standard error: 8.244095# 
               1.664321^2*8.244094^2, 
               1.880852^2*8.244094^2), nrow=12, ncol=12),
      main='Variance-covariance matrix of Y - VarIdent()  - Model 9.1')
@@ -268,9 +276,9 @@ plot(diag(x=c(1.000000^2*8.244094^2,  # delta_t^2 * sigma^2
 ## The anova() function will take the model objects as arguments, and return an ANOVA testing 
 ## whether the more complex model is significantly better at capturing the data than the simpler model.
 
-# H0 - delta2-4 = 1 
-anova(fm9.1, fm6.1)  ## fm6.1 C fm9.1
-
+# H0 - all groups have same residual correlations 
+anova(fm6.1, fm9.1)  ## fm6.1 C fm9.1
+# First simple model, then more complex 
 
 
 #### 2.1 Option 3: VarPower() ####
@@ -282,7 +290,7 @@ fm9.2 <- update(fm9.1, weights = varPower(form = ~time)) # Var. function; <delta
 ##        if you set time.f, there would be an error
 summary(fm9.2)
 
-fm9.2$modelStruct$varStruct
+fm9.2$modelStruct$varStruct # how to get param power- 0.2519332
 intervals(fm9.2, which = "var-cov")
 
 
@@ -310,6 +318,7 @@ summary(fm9.3)
 
 anova(fm9.2, fm9.3) # fm9.2 C fm9.3 # our fm9. models trying to find best transformation of time
 
+anova(fm6.1, fm9.2, fm9.3, fm9.1) # only fm9.2 better than standart model
 
 ## Residual analysis -- we assess the fit of the model using residual plots. 
 
@@ -373,12 +382,20 @@ fm12.1 <- gls(visual ~ -1 + visual0 + time.f + treat.f:time.f,
               data = armd)
 summary(fm12.1)
 
-intervals(fm12.1, which = "var-cov") # if contaoin 0, then probably rpho = 0, and there are no correlation effect
+fm12.1.lme <- lme(
+  fixed = visual ~ -1 + visual0 + time.f + treat.f:time.f,
+  random = ~1 | subject,  # ← добавляет групповую структуру
+  weights = varPower(form = ~time),
+  correlation = corCompSymm(form = ~1 | subject),
+  data = armd
+)
+
+intervals(fm12.1, which = "var-cov") # if contain 0, then probably rpho = 0, and there are no correlation effect
 # With the estimates of rho, sigma and delta we can estimate the var-cov matrix
 
 ## The marginal variance-covariance structure
 ## Estimate of R_i (italic)
-fm12.1vcov <- getVarCov(fm12.1, individual = "2")  # e.g. i=2
+fm12.1vcov <- getVarCov(fm12.1.lme, individual = "2")  # e.g. i=2
 nms <- c("4wks", "12wks", "24wks", "52wks")
 dnms <- list(nms, nms)       # Dimnames created
 dimnames(fm12.1vcov) <- dnms # Dimnames assigned
@@ -408,6 +425,7 @@ plot(C)
 
 ## Test of independence vs. compound-symmetry correlation structure
 anova(fm9.2, fm12.1) # M9.2 C M12.1 # may try with fm9.0
+anova(fm9.0, fm12.1)
 
 # The result of the LR test is clearly statistically significant, indicating
 # the importance of the adjustment for the correlation in modeling the data
@@ -454,7 +472,7 @@ fm12.3 <- update(fm12.2,
 summary(fm12.3)
 
 intervals(fm12.3, # 95% CIs for rho, delta, sigma
-          which = "var-cov")
+          which = "var-cov", level = 0.99)
 
 ## Estimate of R_i (italic)
 fm12.3vcov <- getVarCov(fm12.3, individual = "2")  
@@ -519,7 +537,7 @@ plot(update(stdres.plot, # Fig. 12.4
 ##### model fm12.3a #####
 # (we add a general intercept; equivalent to 12.3 but refitted with 'ML') 
 # VISUAL_it = b_0 + b_0t + b_1*VISUAL0_i + b_2*TREAT_i + b_2t*TREAT_i + eps_it
-lm1a.form <- formula (visual ~ visual0 + time.f + treat.f + time.f:treat.f)   
+lm1a.form <- formula (visual ~ 1+visual0 + time.f + treat.f + time.f:treat.f)   
 fm12.3a <- update(fm12.3, lm1a.form,          
                   method = "ML", data = armd)
 
@@ -527,7 +545,7 @@ fm12.3a <- update(fm12.3, lm1a.form,
 # (we remove time dependent intercept and we leave general intercept 
 #  & we change time from factor to continuous variable)
 # VISUAL_it = b_0 + b_1*VISUAL0_i + b_2*TIME_t + b_3*TREAT_i + b_4 * TIME_t * TREAT_i + eps_it
-lm2.form <- formula(visual ~ visual0 + time + treat.f + treat.f:time)
+lm2.form <- formula(visual ~ 1+visual0 + time + treat.f + treat.f:time)
 fm12.4 <- update(fm12.3, lm2.form,            
                  method = "ML", data = armd)
 
@@ -540,7 +558,7 @@ fm12.5 <- update(fm12.3, lm3.form,            # fm12.5 <- fm2.3
 
 
 ##### comparison #####
-anova(fm12.3a, fm12.4, fm12.5)
+anova(fm12.5, fm12.4, fm12.3a)
 
 summary(fm12.5)
 # final goal - decide that treatment is affective or not, so in our case treatments doesn't look effective 

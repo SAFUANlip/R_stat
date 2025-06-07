@@ -64,6 +64,7 @@ xlimc <- c("4", "12", "24", "52wks")
 # We now treat time as a numeric variable (as assessed in the last lab)
 lm2.form <- formula(visual ~ visual0 + time + treat.f + treat.f:time)
 
+
 fm16.1 <- lme(lm2.form, random = ~1|subject, data = armd) 
 # By default, lme() assumes independent residual errors with a constant variance, sigma^2.
 # The default REML estimation is used --> to change it to the ML estimation, put method="ML" 
@@ -71,6 +72,8 @@ fm16.1 <- lme(lm2.form, random = ~1|subject, data = armd)
 summary(fm16.1)
 # sigma*sqrt(d11) = 8.98 (standard deviation of the random intercepts)
 # sigma = 8.63           (residual standard deviation)
+VarCorr(fm16.1)
+# d11 = (8.98/sigma)^2
 
 
 # print out the estimated fixed-effects table
@@ -79,7 +82,25 @@ printCoefmat(summary(fm16.1)$tTable, has.Pvalue = TRUE, P.values = TRUE)
 # to get the confidence intervals of all the estimated parameters
 intervals(fm16.1)
 
+# Number of parameters ---------------------------------------------------------
 # how many parameters estimated - don't forget about sigma and d11
+# Num of fixed params
+n_fixed <- length(fixef(fm16.1))
+
+# Num of variance params
+# Каждая уникальная случайная группа и ее ковариационная матрица
+re_structures <- VarCorr(fm16.1)
+re_structures
+n_random <- attr(re_structures, "sc")  # residual std dev
+n_variance_params <- nrow(re_structures) - 1  # минус строка residual
+
+# Всегда 1 параметр для остаточной дисперсии (sigma)
+n_sigma <- 1 # (we work with homoscedastic, so there i only one sigma)
+
+# Общее число параметров
+n_total <- n_fixed + n_variance_params + n_sigma
+
+cat("Total number of estimated parameters:", n_total, "\n")
 
 # Var-Cov matrix of
 # - fixed effects
@@ -120,13 +141,20 @@ getVarCov(fm16.1,
 # diagonal matrix 
 # Conditioned to the random effects b_i --> var-cov of the errors are independent and homoscedastic
 
+# Conditional 
+# Это остаточная дисперсия:
+# Var(Yit∣bi)=σ^2*Ri (Ri - ковариационная матрица ошибок (как в прошлом семинаре))
+
 # we extract sigma^2 * Ri for patients i=2,3,4
 sR = getVarCov(fm16.1, type = "conditional", individual = 2:4)
 # and we plot them
 plot(as.matrix(bdiag(sR$`2`, sR$`3`, sR$`4`)),
      main = 'Conditional estimated Var-Cov matrix of Y given b')
 
-
+# Marginal
+# Var(Yit∣bi) = Zi*D*Zi^T + σ^2*Ri = σ^2*Vi
+# Zi*D*Zi^T - ковариация, порождённая случайными эффектами (например, интерцептом).
+# σ^2*Ri - остаточная ковариация
 
 # --> the marginal variance-covariance matrix of Y (block-diagonal matrix)
 #     sigma^2 * V_i for the second subject (type='marginal')
@@ -141,6 +169,18 @@ sV <- getVarCov(fm16.1, type = "marginal", individual = 2:4)
 plot(as.matrix(bdiag(sV$`2`, sV$`3`, sV$`4`)), #-> V is a block-diagional matrix, the marginal var-cov matrix
      main = 'Marginal estimated Var-Cov matrix of Y')
 
+
+sVi
+sR
+VarCorr(fm16.1)[1,1]
+
+tau2 <- as.numeric(VarCorr(fm16.1)[1,1])  # это d11
+J <- matrix(1, nrow = 4, ncol =4)
+sR_matrix <- diag(74.434, 4,4)
+V_manual <- sR_matrix + tau2 * J
+
+V_manual
+sVi
 # Vi - marginal variance-covariance matrix 
 # we got same result as sprevious, but with different model
 
@@ -150,7 +190,14 @@ plot(as.matrix(bdiag(sV$`2`, sV$`3`, sV$`4`)), #-> V is a block-diagional matrix
 # This is also called the intraclass correlation (ICC),
 # because it is also an estimate of the within group correlation.
 
-PVRE <- var_b/(var_b+var_eps)
+VarCorr(fm16.1)
+var_b
+var_eps
+
+get_variance_residual(fm16.1)
+get_variance_random(fm16.1)
+
+PVRE <- var_b/(var_b+var_eps) # 80.60829/(80.60829+74.43401)
 PVRE # it is high!
 # because we have repeated measurments,
 
@@ -268,6 +315,10 @@ plot(as.matrix(bdiag(sV$`2`, sV$`3`, sV$`4`)),
      main = 'Marginal estimated Var-Cov matrix of Y')
 
 
+sR
+sVi
+VarCorr(fm16.2A) #[1,1]
+
 # PVRE 
 #-----#
 # In this case the variance the mean random effect variance of the model is given by
@@ -279,6 +330,19 @@ var_eps <- as.numeric(vc[3,1])
 var_eps
 var_b <- as.numeric(vc[1,1]) + as.numeric(vc[2,1])*mean(armd$time^2) + 
   + 2*as.numeric(vc[2,3])*as.numeric(vc[1,2])*as.numeric(vc[2,2])*mean(armd$time) 
+var_b
+
+get_variance_residual(fm16.2A)
+get_variance_random(fm16.2A)
+
+# Сначала извлечь матрицу D
+D <- matrix(as.numeric(vc[1:2, 1:2]), nrow = 2)  # если 2 случайных эффекта
+# Среднее значение t
+t_bar <- mean(armd$time)
+# Вектор Z: [1, t]
+Z <- matrix(c(1, t_bar), ncol = 1)
+# Посчитать var_b
+var_b <- t(Z) %*% D %*% Z
 var_b
 
 
@@ -336,7 +400,7 @@ intervals(fm16.2A, which = "var-cov")
 ##### Model 2.B: diagonal D (M16.2B) ######
 #-------------------------------------------------------------------------------#
 
-fm16.2B <- lme(lm2.form, random = list(subject = pdDiag(~time)), data = armd) 
+fm16.2B <- lme(lm2.form, random = list(subject = pdDiag(~1+time)), data = armd) 
 # Diagonal D (diagonal positive-definite matrix)
 
 intervals(fm16.2B)                       # 95% CI for betas, sigma  
@@ -381,6 +445,17 @@ plot(as.matrix(bdiag(sV$`2`, sV$`3`, sV$`4`)),
 
 
 # PVRE
+
+#calc_PVRE <- function(model) {
+#  vc <- VarCorr(model)
+#  var_all <- as.numeric(vc[, "Variance"])
+#  var_eps <- var_all[length(var_all)]          # Последняя — всегда residual
+#  var_b <- sum(var_all[-length(var_all)])      # Остальные — random effects
+#  PVRE <- var_b / (var_b + var_eps)
+#  return(PVRE)
+#}
+
+
 #-----#
 # In this case the variance of random effects represents the mean random 
 # effect variance of the model and is given by
@@ -392,8 +467,15 @@ var_eps
 var_b <- as.numeric(vc[1,1]) + mean(armd$time^2)*as.numeric(vc[2,1]) # 54.07117 + 0.07935904*mean(armd$time^2) 
 var_b
 
+vc
+
+get_variance_random(fm16.2B)
+get_variance_residual(fm16.2B)
+
 PVRE <- var_b/(var_b+var_eps)
 PVRE # is very high!
+
+VarCorr(fm16.2B)
 
 
 # Visualization
