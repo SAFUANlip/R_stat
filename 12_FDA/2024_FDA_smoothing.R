@@ -35,6 +35,7 @@ head(truecurve)
 
 points(abscissa,truecurve$X0vera,type="l", col = "orange", lwd = 2)
 
+# Derivatives by hand ----------------------------------------------------------
 # compute the central finite differences (look loke it how we estamete derivatives)
 rappincX1 <- (Xobs0[3:NT]-Xobs0[1:(NT-2)])/(abscissa[3:NT]-abscissa[1:(NT-2)])
 rappincX2 <- ((Xobs0[3:NT]-Xobs0[2:(NT-1)])/(abscissa[3:NT]-abscissa[2:(NT-1)])-(Xobs0[2:(NT-1)]-Xobs0[1:(NT-2)])/(abscissa[2:(NT-1)]-abscissa[1:(NT-2)]))*2/(abscissa[3:(NT)]-abscissa[1:(NT-2)])
@@ -76,7 +77,7 @@ dev.off()
 library(fda)
 
 # Set parameters
-# so m = 1 => y =constant (degree m - 1), m = 2 (degree = 2-1, y=kx+b (polynomial of degree 1))
+# so m = 1 => y =constant (degree m - 1), m = 2 (degree = 2 - 1, y=kx+b (polynomial of degree 1))
 m <- 6           # spline order  # should be chosen from the nature of nature =>
 # m−2 order of their derivatives!
 degree <- m-1    # spline degree (degree of polynomilas, which will be used in basis functions)
@@ -124,9 +125,9 @@ legend("topright", legend=paste("B", 1:nbasis, sep=""),
        col=colors, lwd=2, cex=0.8)
 
 
-###############
-### Fit via LS
-###############
+
+### Fit via LS -----------------------------------------------------------------
+
 
 # just to show you that we are truly solving a linear regression problem,
 # you could obtain your regression spline by lsfit
@@ -173,7 +174,7 @@ points(abscissa,Xsp2 ,type="l",col="blue",lwd=2)
 
 dev.off()
 
-############################
+# Spline fitting  --------------------------------------------------------------
 # alternative ready-to-use code for sline fitting
 # use this one!!!
 
@@ -184,11 +185,11 @@ Xsp1bis <- eval.fd(abscissa, Xsp$fd, Lfd=1) # first derivative
 Xsp2bis <- eval.fd(abscissa, Xsp$fd, Lfd=2) # second derivative
 df <- Xsp$df   #  the degrees of freedom in the smoothing curve  
 df             #  for regression splines the df are the number of basis
-############################
 
 
-#### Oversmoothing: number of basis too low ####
-# simpler the basis, the more we will induces nias in estimator
+
+#### Oversmoothing: number of basis too low ------------------------------------
+# simpler the basis, the more we will induces bias in estimator
 
 nbasis <- 7
 
@@ -264,8 +265,8 @@ points(abscissa,Xsp2bis ,type="l",col="green",lwd=2)
 points(abscissa,Xsp2 ,type="l",col="blue",lwd=2)
 
 # here we also interpolated noise 
-# takin increasing k - we decrease bias, and increase variacne (bias-variance trade-off)
-# from the estimate of the derivaties we also can notice undersmoothing/oversmoothing (underfitting/overfitting)
+# increasing k - we decrease bias, and increase variacne (bias-variance trade-off)
+# from the estimate of the derivaties we also can notice undersmoothing/oversmoothing (overfitting/underfitting)
 
 
 # generalized cross-validation
@@ -282,6 +283,29 @@ abline(v = nbasis[which.min(gcv)], col = 2)
 
 # minimum of GCV achived with nbasis = 10
 # TRY TO RUN LEAVE ONE OUT
+# LEAVE ONE OUT CV -------------------------------------------------------------
+nbasis <- 6:30
+leave_one_out_cv <- numeric(length(nbasis))
+for (i in 1:length(nbasis)){
+  squared_errors <- numeric(length(abscissa))
+  for (j in 1:length(abscissa)){
+    basis <- create.bspline.basis(c(0,1), nbasis[i], m)
+    fit <- smooth.basis(abscissa[-j], Xobs0[-j], basis)
+    
+    pred <- predict(fit, abscissa[j]) # shows same result
+    #pred <- eval.fd(fit$fd, abscissa[j]) 
+    squared_errors[j] <- (pred-Xobs0[j])^2
+  }
+  leave_one_out_cv[i] <- sum(squared_errors)/length(abscissa)
+}
+
+fit$df
+leave_one_out_cv
+
+par(mfrow=c(1,1))
+plot(nbasis,leave_one_out_cv)
+nbasis[which.min(leave_one_out_cv)]
+abline(v = nbasis[which.min(leave_one_out_cv)], col = 2)
 
 #### Bias-Variance tradeoff ####
 
@@ -308,12 +332,20 @@ legend('topright', c("Bias","Var","MSE"), col=c("black","red","green"),
 
 
 
-#### Approximate pointwise confidence intervals ####
+#### Approximate pointwise confidence intervals CI ---------------------------
 # As in linear models, we can estimate the variance of x(t) as
 # sigma^2*diag[phi*(phi'phi)^{-1}(phi)']
+basis <- create.bspline.basis(c(0,1), 10, m)
+basismat <- eval.basis(abscissa, basis)
+
+fit$df
+
 S <- basismat%*%solve(t(basismat)%*%basismat)%*%t(basismat) #projection operator 
 sum(diag(S))
 sigmahat <- sqrt(sum((Xsp0-Xobs0)^2)/(NT-df)) #estimate of sigma
+
+1-0.05/2
+
 lb <- Xsp0-qnorm(0.975)*sigmahat*sqrt(diag(S))
 ub <- Xsp0+qnorm(0.975)*sigmahat*sqrt(diag(S))
 
@@ -326,8 +358,7 @@ points(abscissa,truecurve$X0vera,type="l")
 # one at the time interval - its' not Simultanious intervals 
 
 
-####
-#### SMOOTHING SPLINES ####
+#### SMOOTHING SPLINES ---------------------------------------------------------
 ####
 
 breaks <- abscissa[((0:50)*2)+1]
@@ -336,7 +367,8 @@ breaks <- abscissa
 m <- 6 # second derivatives will be cubic splines
 
 basis <- create.bspline.basis(breaks, norder=m)
-functionalPar <- fdPar(fdobj=basis, Lfdobj=m-2, lambda=1e-9)  # we have to panalise second derivative, so m-2 (6-2 = 4th derivative)
+basis$nbasis
+functionalPar <- fdPar(fdobj=basis, Lfdobj=m-2, lambda=1e-9)  # we have to penalise second derivative, so m-2 (6-2 = 4th derivative)
 # functional parameter, having arguments: 
 # basis, order of the derivative to be penalized, smoothing parameter.
 
@@ -420,6 +452,8 @@ for (i in 1:length(lambda)){
 par(mfrow=c(1,1))
 plot(log10(lambda),gcv)
 lambda[which.min(gcv)]
+abline(v = lambda[which.min(gcv)], col = 2)
+
 
 
 # best lambda
@@ -453,8 +487,7 @@ points(abscissa,Xss2best ,type="l",col="blue",lwd=2)
 
 
 
-####
-#### LOCAL POLYNOMIAL REGRESSION ####
+#### LOCAL POLYNOMIAL REGRESSION -----------------------------------------------
 ####
 
 library(KernSmooth)
@@ -554,12 +587,11 @@ points(abscissa,Xsm2 ,type="l",col="blue",lwd=2)
 
 
 
-#### Constrained functions ####
+#### Constrained functions -----------------------------------------------------
 
 
-####
-#### SMOOTHING for positive curves ####
-####
+#### SMOOTHING for positive curves ---------------------------------------------
+
 
 # y_j = exp(w(t_j)) + e_j
 
@@ -575,11 +607,8 @@ points(abscissa,Xsm2 ,type="l",col="blue",lwd=2)
 help(smooth.pos)
 
 
+#### SMOOTHING for monotone curves ---------------------------------------------
 
-
-####
-#### SMOOTHING for monotone curves ####
-####
 
 
 # Example: Berkeley growth data
@@ -616,11 +645,11 @@ abline(h=0)
 matplot(age,heightacceleration,type="l")
 
 
-# par(mfrow=c(1,3))
-# matplot(age,height,type="l" )
-# matplot(age[-c(1,2,3,31)],heightvelocity[-c(1,2,3,31),],type="l" )
-# abline(h=0)
-# matplot(age[-c(1,2,3,31)],heightacceleration[-c(1,2,3,31),],type="l")
+par(mfrow=c(1,3))
+matplot(age,height,type="l" )
+matplot(age[-c(1,2,3,31)],heightvelocity[-c(1,2,3,31),],type="l" )
+abline(h=0)
+matplot(age[-c(1,2,3,31)],heightacceleration[-c(1,2,3,31),],type="l")
 
 
 # a negative velocity does not make any sense (girls height does not 
@@ -657,7 +686,7 @@ ncasef <- dim(hgtf)[2]
 norder <- 6
 nbasis <- nage - 2 + norder 
 wbasis <- create.bspline.basis(rangeval = ageRng, nbasis = nbasis, 
-                              norder = norder, breaks = age)
+                              norder = norder, breaks = age) # breaks - specidies knots
 
 # We construct the functional parameter with penalization of the fourth 
 # derivative

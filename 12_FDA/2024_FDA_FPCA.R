@@ -36,7 +36,7 @@ time <- 1:365
 # Cons: possible overfitting 
 basis.1 <- create.fourier.basis(rangeval=c(0,365),nbasis=365)
 data_W.fd.1 <- Data2fd(y = data_W,argvals = time,basisobj = basis.1)
-plot.fd(data_W.fd.1)
+plot.fd(data_W.fd.1) # almost no difference, compared to source data (overfitting, undersmoothing)
 
 # Choice 2: reduced dimensionality (we set a low dimensional basis)
 # Pros: the data are much smoother and the measurement error is filtered
@@ -91,7 +91,7 @@ help(pca.fd)
 # interpolated data (Choice 3)
 plot.fd(data_W.fd.3,ylab='temperature')
 
-pca_W.3 <- pca.fd(data_W.fd.3,nharm=5,centerfns=TRUE)
+pca_W.3 <- pca.fd(data_W.fd.3, nharm=5, centerfns=TRUE)
 
 # scree plot
 # pca.fd computes all the 365 eigenvalues, but only the first 
@@ -113,7 +113,7 @@ media <- mean.fd(data_W.fd.3)
 plot(media,lwd=2,ylim=c(-25,20),ylab='temperature',main='FPC1')
 lines(media+pca_W.3$harmonics[1,]*sqrt(pca_W.3$values[1]), col=2)
 lines(media-pca_W.3$harmonics[1,]*sqrt(pca_W.3$values[1]), col=3)
-# see more emphasisi in winter, rather than in summer
+# see more emphasize in winter, rather than in summer
 # variation in amplitude (more in winter than in summer)
 
 plot(media,lwd=2,ylim=c(-20,20),ylab='temperature',main='FPC2')
