@@ -109,8 +109,8 @@ lmm1 = lmer(achiev ~ gender + escs + (1|school_id),
 summary(lmm1)
 
 
-# Fixed Effects and 95% CIs
-#-------------------------------
+# Fixed Effects and 95% CIs --------------------------------------------------------------
+
 confint(lmm1, oldNames=TRUE)
 intervals(lmm1_lme)
 fixef(lmm1)
@@ -119,8 +119,7 @@ fixef(lmm1)
 # and on average, students with higher escs are associated to higher achievement scores.
 
 
-# Variance components
-#--------------------
+# Variance components ------------------------------------------------------------
 # One thing that's new compared to the standard regression output is the estimated 
 # variance/standard deviation of the school effect.
 # This tells us how much, on average, achievement bounces around as we move from school to school. 
@@ -147,8 +146,8 @@ PVRE
 
 # PVRE = 41.8% is very high!
 
-# Random effects: b_0i
-#----------------------------
+# Random effects: b_0i --------------------------------------------------------------
+
 ranef(lmm1)
 
 # The dotplot shows the point and interval estimates for the random effects, 
@@ -185,8 +184,8 @@ for(i in 1:50){
 
 # 
 
-# Diagnostic plots 
-#------------------
+# Diagnostic plots ------------------------------------------------------------
+
 # 1) Assessing Assumption on the within-group errors
 x11()
 plot(lmm1)
@@ -202,8 +201,8 @@ qqline(unlist(ranef(lmm1)$school_id), col='red', lwd=2)
 
 
 
-# Prediction
-#-------------
+# Prediction --------------------------------------------------------------------
+
 # Let's now examine standard predictions vs. cluster-specific predictions.
 # As with most R models, we can use the predict function on the model object.
 
@@ -222,6 +221,8 @@ head(predict_re)
 
 # Prediction from mixed model on a test observation from a subject present in the training set:
 test.data = data.frame(school_id= '50', gender = as.factor(1), escs = 3)
+
+ranef(lmm1)[[1]]
 
 # 1) Without random effects ->  re.form=NA
 predict_no_re <- predict(lmm1, newdata = test.data, re.form=NA)
@@ -250,7 +251,7 @@ predict(lmm1, newdata = your_new_data, allow.new.levels = TRUE) # assuming of ra
 
 
 
-## Scenario Analysis
+## Scenario Analysis ------------------------------------------------------------
 
 # Let's imagine to observe three new students with the same personal characteristics 
 # but enrolled in different schools,
@@ -273,13 +274,18 @@ summary(lmm1)
 # but we can cluster schools, and then find to whicj cluster our new school belongs 
 # and use information from this school for prediction
 
-#### Linear Mixed Model with Random Intercept & Slope ####
+#### Linear Mixed Model with Random Intercept & Slope --------------------------
 
 graphics.off()
 
 ## We now consider the possibility that the association between escs and student achievements differs across schools.
 ## We include a random slope for the escs to model this additional source of heterogeneity. 
 
+lmm2_lme <- lme(achiev ~ 1 + escs + gender, random=~1+escs|school_id, data=school)
+summary(lmm2_lme)
+
+# b_0i - intercpet of scools
+# b_1i - slope of escs
 # MODEL:  achiev_ij = beta_0 + b_0i + (beta_1 + b_1i)*escs_i + eps_i --> homoscedastic residuals 
 
 # eps_i ~ N(0, sigma2_eps)
@@ -311,7 +317,7 @@ print(vc <- VarCorr(lmm2), comp = c("Variance", "Std.Dev."))
 sigma2_eps <- as.numeric(get_variance_residual(lmm2))
 sigma2_eps
 sigma2_b <- as.numeric(get_variance_random(lmm2))  ## it automatically computes Var(b0,b1)
-# 4.3228 + 2*0.164*2.0791*1.6451* mean(school$escs, na.rm=T) + 2.7063*mean(school$escs^2, na.rm=T)
+# 4.3228 + 2 * 0.164 * 2.0791 * 1.6451 * mean(school$escs, na.rm=T) + 2.7063*mean(school$escs^2, na.rm=T)
 sigma2_b
 
 PVRE <- sigma2_b/(sigma2_b+sigma2_eps)
@@ -400,7 +406,7 @@ anova(lmm1, lmm2)
 
 # The p-value for the test is essentially zero -> we prefer lmm2
 
-
+anova(lmm1_lme, lmm2_lme)
 graphics.off()
 
 

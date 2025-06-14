@@ -6,6 +6,7 @@ library(dbscan)
 library(cluster)
 library(fields)
 
+# Password: KLIbPAaVo7QbN66
 
 ## Exercise 1 ---------------------------------------------------------------------------------
 # The Veritatis Diagram is a mysterious work attributed to Galileo. Some

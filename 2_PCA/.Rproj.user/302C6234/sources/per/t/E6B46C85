@@ -3,7 +3,7 @@
     "path": "~/R_stat/2_PCA/2_PCA.R",
     "project_path": "2_PCA.R",
     "type": "r_source",
-    "hash": "1540792600",
+    "hash": "4184766033",
     "contents": "",
     "dirty": false,
     "created": 1741942732955.0,
@@ -12,15 +12,15 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "693,0",
-        "scrollLine": "685"
+        "cursorPosition": "4,0",
+        "scrollLine": "0"
     },
     "folds": "",
-    "lastKnownWriteTime": 1748620180,
+    "lastKnownWriteTime": 1749704443,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1748620180411,
+    "last_content_update": 1749704443279,
     "read_only": false,
     "read_only_alternatives": []
 }

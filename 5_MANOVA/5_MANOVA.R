@@ -13,6 +13,7 @@ library(MVN)
 library(car)
 library(heplots)
 
+# Password: KLIbPAaVo7QbN66 
 
 # One-way -------------------------------------------------------------------------------------
 
@@ -109,6 +110,9 @@ summary(fit)
 # Which supplement is responsible for this? To see this, we need to (какой из классов выбивается из нулевой гипотезы)
 # do g * (g - 1) / 2 comparisons.
 # We use Bonferroni
+qf(1-0.05,3,36)
+
+1-pf(3.52,3,36)
 k <- g * (g - 1) / 2
 alpha = 0.05
 

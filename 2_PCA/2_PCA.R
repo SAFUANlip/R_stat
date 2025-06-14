@@ -2,6 +2,8 @@
 ### Lab 2: Principal Component Analysis (PCA) ###
 ###-------------------------------------------###
 
+# Password: KLIbPAaVo7QbN66
+
 # Load necessary libraries
 library(mvtnorm) # to deal with multivariate normal distributions
 library(car) # "Companion to Applied Regression" for regression analysis

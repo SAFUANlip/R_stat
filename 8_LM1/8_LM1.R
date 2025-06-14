@@ -2,6 +2,8 @@
 ### Lab 8: Linear Models (I) ###
 ###--------------------------###
 
+# Password: KLIbPAaVo7QbN66
+
 # TOPICS:
 # Linear models
 

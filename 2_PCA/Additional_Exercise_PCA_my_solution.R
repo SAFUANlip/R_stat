@@ -113,6 +113,10 @@ NO <- read.table("NO.txt", header = TRUE)
 n <- dim(NO)[1]
 p <- dim(NO)[2]
 
+boxplot(NO, col = 'gold', main = 'Original Variables') 
+
+S <- cov(NO)
+
 var.gen <- det(S)
 var.tot <- sum( diag(S) )
 S
@@ -199,6 +203,63 @@ t(as.matrix(new_obs)) %*% as.matrix(pc.NO$loadings)
 t(as.matrix(new_obs)) %*% as.matrix(pc.NO.sd$loadings)
 
 predict(pc.NO, new_obs_df) # model knowing, that data has not zero mean, centralise input by automatically 
-predict(pc.NO.sd, new_obs_df-colMeans(NO)) # if we use pca, which trained on entralised data - we have to centralise by ourself
+predict(pc.NO.sd, new_obs_df-colMeans(NO)) # if we use pca, which trained on сentralised data - we have to centralise by ourself
 
 scores.pc.NO.sd
+
+# Check Total and Generalised Variance after PCA -------------------------------
+# Загружаем данные
+data(iris)
+X <- iris[, 1:4]
+
+boxplot(X, col = 'gold', main = 'Original Variables')
+
+# Стандартизация данных
+X_scaled <- scale(X)
+cov(X_scaled)
+boxplot(X_scaled, col = 'gold', main = 'Standartised Variabels')
+
+# --- Исходная ковариационная матрица ---
+cov_orig <- cov(X_scaled)
+cov_orig
+# --- Total Variance (сумма дисперсий) ---
+total_var_orig <- sum(diag(cov_orig))
+cat("Total variance (original):", total_var_orig, "\n")
+
+# --- Generalized Variance (определитель) ---
+gen_var_orig <- det(cov_orig)
+cat("Generalized variance (original):", gen_var_orig, "\n")
+
+# --- PCA через princomp ---
+pca_model <- princomp(X_scaled, cor = FALSE, scores = TRUE)
+
+# Преобразованные данные
+X_pca <- pca_model$scores
+
+# --- Ковариационная матрица после PCA ---
+cov_pca <- cov(X_pca)
+
+cov_pca
+# --- Total Variance после PCA ---
+total_var_pca <- sum(diag(cov_pca))
+cat("Total variance (PCA):", total_var_pca, "\n")
+
+# --- Generalized Variance после PCA ---
+gen_var_pca <- det(cov_pca)
+cat("Generalized variance (PCA):", gen_var_pca, "\n")
+
+# what if cetralise 
+# PCA без стандартизации
+p1 <- princomp(X, cor = FALSE)
+
+# PCA со стандартизацией
+p2 <- princomp(X, cor = TRUE)
+
+X_centred <- scale(X,scale = FALSE, center = TRUE)
+boxplot(X_centred, col = 'gold', main = 'Centered Variabels')
+p3 <- princomp(X_centred, cor = FALSE)
+
+# Сравним долю объяснённой дисперсии
+summary(p1)
+summary(p2)
+summary(p3)
