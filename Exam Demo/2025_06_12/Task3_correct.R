@@ -111,7 +111,7 @@ predict(g2.tr, s7.new, BLUE = TRUE) # var1.pred = 0.637564 = b_0_0_0 + b_1_0
 # b_1_0 = 0.637564 - 0.6261478 = 0.0114162
 
 # How would you describe the effect of the canopy variable (during early summer)?
-# It has positive effect, sue to coefficent > 0, so canopy helps trees growth 
+# It has positive effect, вue to coefficent > 0, so canopy helps trees growth 
 # also Coefficents with canopy (TRUE) has higher value, so it has better effect for
 # trees growth, compared to open-airs
 
