@@ -182,7 +182,7 @@ V_manual <- sR_matrix + tau2 * J
 V_manual
 sVi
 # Vi - marginal variance-covariance matrix 
-# we got same result as sprevious, but with different model
+# we got same result as previous, but with different model
 
 # PVRE 
 #------#

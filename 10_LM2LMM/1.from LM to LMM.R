@@ -143,13 +143,13 @@ abline(h=0)
 qqnorm(lm6.1$residuals) # shapiro test sensitive to high number of observations, so if we have many value - then more probably p-valu < 0.05
 qqline(lm6.1$residuals) # so looking on qqplot we can say, the there are something unusual with variability 
 
-shapiro.test(lm6.1$residuals) # and we may see, that residuals anre not normal
+shapiro.test(lm6.1$residuals) # and we may see, that residuals are not normal
 
 ## But we know that observations are not independent 
 ## and that the variance of the visual measurements increases in time
 
 ## let's color the residuals relative to different patients
-colori =rainbow(length(unique(armd$subject)))
+colori = rainbow(length(unique(armd$subject)))
 num_sub = table(armd$subject)
 colori2 = rep(colori, num_sub)
 plot(lm6.1$residuals, col=colori2)

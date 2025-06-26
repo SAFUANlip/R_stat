@@ -4,7 +4,7 @@ library(rgl)
 library(glmnet) # to use LASSO
 library(nlme)
 
-data <- read.table("asthma.txt")
+data <- read.table("Demo_exam/asthma.txt")
 # if our urban been numerical variabel, 0/1, then R will use it as numeric, not factor
 # but we expected to use factor
 lm <- lm(asthma ~ urban + age + pollution + sunny + tobacco + income + education, data = data)

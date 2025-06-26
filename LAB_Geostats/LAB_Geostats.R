@@ -229,6 +229,7 @@ attr(v.fit, 'SSErr')
 
 # ex: fix the nugget variance to the value 0.06
 fit.variogram(v, vgm(1, "Sph", 800, 0.06), fit.sills = c(FALSE, TRUE)) # first correspnd to nugget, second for spherical model
+# but if I didn't indicate nugget, then i should not indicate it in fit.sills
 # the range parameters can be fixed using argument fit.ranges
 fit.variogram(v, vgm(1, "Sph", 800, 0.06), fit.sills = c(TRUE, TRUE))
 fit.variogram(v, vgm(1, "Sph", 800, 0.06), fit.sills = c(TRUE, FALSE))
