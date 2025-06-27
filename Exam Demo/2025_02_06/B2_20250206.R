@@ -9,7 +9,7 @@ library(lme4)
 #  • the dietary background of the individual, encoded as an integer variable: diet
 #  • the self-reported average energy level on a scale from -10 to 10: energy
 
-sugar_energy <-read.table("20250206/sugar.txt", h=TRUE)
+sugar_energy <-read.table("2025_02_06/sugar.txt", h=TRUE)
 
 # a) Implement the following linear regression model M0:
 # energy= ω0,i + ω1 sugar + ε
@@ -21,8 +21,8 @@ length(unique(sugar_energy$diet))
 lm_model <- lm(energy ~ -1 + as.factor(diet) + sugar, data = sugar_energy)
 summary(lm_model)
 
-lm_model$coefficients[2] # betta_0_2
-lm_model$coefficients[201] # betta_1
+lm_model$coefficients[2] # betta_0_2 = 1.071348
+lm_model$coefficients[201] # betta_1 = 0.5116741
 
 # b) Consider now the model M1:
 # energyi = ω0 + bi1ni + ω1 sugari + ωi 
@@ -34,7 +34,7 @@ lme_model <- lme(energy ~ 1 + sugar, random = ~1|as.factor(diet), data = sugar_e
 summary(lme_model)
 
 sigma2 <- get_variance_random(lme_model)
-sqrt(sigma2) # sigma_b 
+sqrt(sigma2) # sigma_b = 0.9410168
 
 VarCorr(lme_model)
 # Advantage of M1 model that it take into account randomness in each group individually

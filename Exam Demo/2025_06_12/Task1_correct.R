@@ -20,7 +20,9 @@ library(insight)
 
 # bi_1ni - means random intercept 
 
-plants_mood <- read.table("plants_mood.txt", h=TRUE)
+plants_mood <- read.table("2025_06_12/plants_mood.txt", h=TRUE)
+
+summary(lm(mood ~ zone_id, data = plants_mood))
 
 lme_model <- lme(mood ~ plants + light + social, random =
                 ~1|as.factor(zone_id), data = plants_mood)
@@ -63,7 +65,10 @@ summary(lme_model2)
 anova(lme_model, lme_model2) # so model with heteroscedastic residuals better
 # due to we rejected H0 of not importance of heteroscedastic
 
-# Report the value of the test statistic: 71.122 
+# Model df      AIC      BIC    logLik   Test           L.Ratio p-value
+# lme_model      1  6 6642.329 6675.923 -3315.165                        
+# lme_model2     2  7 6573.207 6612.399 -3279.604 1 vs 2 71.12235  <.0001
+# Report the value of the test statistic: 71.122 - L.Ratio 
 
 # d) Estimate (using M2) the mood of a person having 5 plants,
 # 12 hours of natural light exposure and 5 hours of in-person interaction per day.

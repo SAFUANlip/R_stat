@@ -14,7 +14,7 @@ library(gstat)
 # Ticket sales are first modeled based on price using the following relationship:
 # y(si) = b0 + b1price + ω(si) 
 
-moviesales <- read.table("20250206/moviesales.txt", h=TRUE)
+moviesales <- read.table("2025_02_06/moviesales.txt", h=TRUE)
 coordinates(moviesales) <- c('x', 'y')
 
 # where ω(si) represents a stationary residual modeled with a spherical variogram with nugget.
@@ -55,7 +55,7 @@ predict(g.tr, s1.new, BLUE = TRUE) # b_1 = 4.35331 - b_0 = 0.029383
 sc.new=data.frame(x=514712, y=5033903, price=8.50) # UTM coordinates
 coordinates(sc.new)=c('x','y')
 
-predict(g.tr, sc.new, BLUE = FALSE) # var1.pred = 4.910301 - b_0 # FALSE - because (assuming spatial correlation)
+predict(g.tr, sc.new, BLUE = FALSE) # var1.pred = 4.910301  # FALSE - because (assuming spatial correlation)
 
 # d) Modify the model in Eq. (3) as follows:
 #       y(si) = b0,j + b1,k price + ω(si) 

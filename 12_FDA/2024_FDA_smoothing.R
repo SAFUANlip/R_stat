@@ -86,7 +86,7 @@ nbasis <- 10 # number of internal
 # If we use spline basis of order m, with k internal knots, then overall number basis 
 # nbasis = 6+4 = 10 (4 - number of knots (точки))
 # knots (basis$params) - points, dividing our x-axis, knots = 1 => x-axis - will be divided into 2 sections 
-# m - also number of control points, which will be affect on polinom in each section
+# m - also number of control points, which will be affect on polynom in each section
 
 # Create the basis
 help(create.bspline.basis)
@@ -154,6 +154,7 @@ abline(v=basis$params)
 basismat1<- eval.basis(abscissa, basis, Lfdobj=1)
 head(basismat1)
 Xsp1 <- basismat1 %*% est_coef
+
 
 # to obtain the second derivative (argument Lfdobj=2)
 basismat2<- eval.basis(abscissa, basis, Lfdobj=2)
@@ -503,7 +504,6 @@ Xsm0 <- locpoly(abscissa, Xobs0, degree=degree,
                 bandwidth=bw, gridsize=length(abscissa), 
                 range.x=range(abscissa))
 Xsm0 <- Xsm0$y # we have to choose, for which point we wnat to fit model
-
 
 par(mfrow=c(1,1))
 plot(abscissa,Xobs0,xlab="t",ylab="observed data")

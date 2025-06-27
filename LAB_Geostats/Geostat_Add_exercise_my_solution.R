@@ -188,10 +188,10 @@ radioville <- read.table("radioville.txt", h=TRUE)
 # firstly we need empirical variogram, and then we may fit our models on it
 coordinates(radioville) <- c('Long', 'Lat')
 
-proj4string(radioville) <- CRS("+proj=longlat +datum=WGS84")  # indicate, that it long-lat
+#proj4string(radioville) <- CRS("+proj=longlat +datum=WGS84")  # indicate, that it long-lat
 
 # Transform to UTM
-radioville_utm <- spTransform(radioville, CRS("+proj=utm +zone=17 +datum=WGS84"))
+#radioville_utm <- spTransform(radioville, CRS("+proj=utm +zone=17 +datum=WGS84"))
 
 v <- variogram(Bq ~ 1 + D, radioville)
 plot(v)
@@ -243,5 +243,6 @@ g.tr <- gstat(formula = Bq ~ 1 + D, data = radioville, model = v2.fit)
 
 predict(g.tr, s1.new)
 predict(g.tr, s2.new)
+
 
 
