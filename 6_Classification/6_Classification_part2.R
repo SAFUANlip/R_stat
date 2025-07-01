@@ -974,7 +974,7 @@ plot(x, col =ifelse(y==1, 'salmon', 'light blue'), pch=19, xlab='x1', ylab='x2',
 train <- sample (200 ,100)
 
 # Fit a Support Vector Machine (kernel = "radial") given a cost C
-svmfit <- svm(y~., data=dat [train ,], kernel ='radial', gamma =1, cost =1)
+svmfit <- svm(y~., data=dat [train ,], kernel ='radial', gamma =1, cost = 1)
 summary(svmfit)
 
 # Plot the SVM

@@ -1,0 +1,11 @@
+"t1" "t2" "t3"
+"Highland Glen" 35 30 20
+"Silver Oak" 20 20 5
+"Mystic River" 30 30 20
+"Old Barrel" 235 225 215
+"Golden Stag" 20 30 20
+"Whispering Pines" 45 45 40
+"Emerald Isle" 60 55 55
+"Royal Thistle" 35 40 35
+"Midnight Cask" 85 80 80
+"Copper Moon" 205 205 200

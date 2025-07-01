@@ -40,7 +40,7 @@ breaks <- abscissa
 basis_breaks <- create.bspline.basis(rangeval=c(0,25), breaks=breaks, norder=m)
 basis_breaks$nbasis
 
-functionalPar <- fdPar(fdobj=basis, Lfdobj=m-2, lambda=1)
+functionalPar <- fdPar(fdobj=basis, Lfdobj=m-2, lambda=1) # Lfdobj=m-2 penalise second derivative 
 
 Xobs0 <- stelvio$altitude
 Xss <- smooth.basis(abscissa, Xobs0, functionalPar)
@@ -49,7 +49,7 @@ Xss0 <- eval.fd(abscissa, Xss$fd, Lfd=0) # zero derivative (fit to data)
 Xss1 <- eval.fd(abscissa, Xss$fd, Lfd=1) # first derivative (fit to first derivative)
 Xss2 <- eval.fd(abscissa, Xss$fd, Lfd=2)
 
-gcv <- Xss$gcv  #  the value of the gcv statistic
+gcv <- Xss$gcv  #  the value of the GCV statistic (Generalisd cross validation)
 gcv # 1490.361
 
 plot(abscissa,Xobs0, type = "l")
@@ -80,7 +80,7 @@ for (i in 1:length(lambda)){
 }
 par(mfrow=c(1,1))
 plot(log10(lambda),gcv)
-lambda[which.min(gcv)]
+lambda[which.min(gcv)] # 3.162278
 abline(v = log10(lambda[which.min(gcv)]), col = 2)
 
 opt_lambda <- lambda[which.min(gcv)]

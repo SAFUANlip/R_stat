@@ -668,7 +668,7 @@ t2
 
 n1 <- dim(t1)[1] # n1 = 3
 n2 <- dim(t2)[1] # n2 = 4
-p  <- dim(t1)[2] # p = 2
+p  <- dim(t1)[2] # p = 2 nuber of features
 
 # Test for multivariate normality -> useless regarding the sample sizes
 

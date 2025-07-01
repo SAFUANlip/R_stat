@@ -37,8 +37,14 @@ shapiro.test(lm$residuals)
 # provide an 95% confidence interval for the mean difference between the asthma prevalence in an urban province
 # and in a non-urban one
 
+mean(data$asthma[data$urban=="Yes"])
+mean(data$asthma[data$urban=="No"])
+
+mean(data$asthma[data$urban=="Yes"]) - mean(data$asthma[data$urban=="No"]) # 7.045477
+
 summary(lm)
 confint(lm, parm="urbanYes", level = 0.95)
+confint(lm, parm="urbanYes", level = 0.2) # [7.437475, 9.066234]
 confint(lm, level = 0.95)
 
 # After having reduced the model M0, if appropriate

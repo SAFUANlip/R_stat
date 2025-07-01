@@ -12,7 +12,7 @@ library(MASS)
 # (coded as 1 for regions with irrigation, 0 for regions without).
 # All continuous variables have been standardized to have a mean of 0 and a standard deviation of 1.
 
-crop_yields <- read.table("20250117/crop_yield.txt", h=TRUE)
+crop_yields <- read.table("2025_01_17/crop_yield.txt", h=TRUE)
 
 # a) Fit the following linear regression model M0:
 #   crop yield= ω0,k + ω1 temperature + ω2 rainfall + ω3 sunny + ω4 soil quality + ω5 fertilizer + ε (1)

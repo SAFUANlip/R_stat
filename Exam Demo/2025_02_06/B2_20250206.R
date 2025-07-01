@@ -59,11 +59,19 @@ summary(lme_model22)$tTable
 random_effects <- ranef(lme_model22)
 
 head(random_effects)
+# (Intercept)       sugar
+# 1   0.7547024  0.03992505
+# 2   0.7630266  0.02791044
+# 3   1.1539807 -0.17826659 # for example here we have negative coefficent, so for this diet 3 it will have negative effect
+# 4  -0.5548982  0.10485552
+# 5   0.5655092  0.10622680
+# 6  -0.6558498  0.13918103
 
 
 lme_model2 <- lme(energy ~ 1 + sugar:as.factor(diet), random = ~1|as.factor(diet), data = sugar_energy)
 summary(lme_model2)
-# yes, there are diets, where sugar may have negitive effect (based on value of ceofficients)
+# yes, there are diets, where sugar may have negitive effect
+# (based on value of ceofficients from random effect)
 
 # d) Comment on whether M1 or M2 better explains the data, supporting your answer with an appropriate test.
 anova(lme_model, lme_model2, lme_model22) # 22 - model with random intercept and slope has only 6 params 

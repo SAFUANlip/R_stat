@@ -20,7 +20,7 @@ library(pheatmap) # pheatmap
 # or the standardized ones, and justify your choice. Is there a clear number of principal components to consider?
 #   How many principal components are needed to explain at least → 80% of the total variability?
 
-athlete_stats <- read.table("20250117/athlete_stats.txt", h=TRUE) 
+athlete_stats <- read.table("2025_01_17/athlete_stats.txt", h=TRUE) 
 
 n <- dim(athlete_stats)[1]
 p <- dim(athlete_stats)[2]

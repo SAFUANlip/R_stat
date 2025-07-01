@@ -159,7 +159,6 @@ lines(media-pca_W.2$harmonics[2,]*sqrt(pca_W.2$values[2]), col=3)
 # in this specific case study, similar interpretations as before
 # but NEVER smooth too much your data if you later need to do a PCA!
 
-
 graphics.off()
 
 # scatter plot of the scores
@@ -282,3 +281,4 @@ lines(eval[,12],lwd=4, col=2)
 lines(eval[,9],lwd=4, col=3)
 
 graphics.off()
+

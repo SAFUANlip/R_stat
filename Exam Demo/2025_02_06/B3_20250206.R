@@ -24,10 +24,12 @@ v <- variogram(sales ~ 1 + price, moviesales)
 plot(v)
 
 v.fit <- fit.variogram(v, vgm(3, "Sph", 2000, 1), fit.method = 7) # 7 - by default (Weighted least squares) 
-# I did't indicate nugget, so model don't use it
 v.fit # here we see psill and range (estimated)
 plot(v, v.fit)
 
+# vmodel <- vgm(3, "Sph", 2000, 1)
+# variogramLine(vmodel, maxdist = 3000) # overall sill = 3 (sill) + 1 (nugget) = 4 (total sill)
+ 
 # model    psill    range
 # 1   Nug 1.451283    0.000
 # 2   Sph 1.550279 2001.374
