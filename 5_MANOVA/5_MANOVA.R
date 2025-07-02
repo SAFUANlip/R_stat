@@ -94,7 +94,7 @@ bartlett.test(weight, feed) # ANOVA works with factor <= 10 ?
 help(aov)
 fit <- aov(weight ~ feed)
 summary(fit)
-
+weight
 # SStreat - variability between groups
 # SSres - variability withing groups
 ### How to read the summary:

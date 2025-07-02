@@ -669,7 +669,9 @@ Sp
 g <- 3
 p <- 2
 s <- min(g-1,p)
-s
+s 
+# s - это максимально возможное число линейно независимых направлений (дискриминантных векторов),
+# на которые можно проецировать данные при Fisher's Linear Discriminant Analysis (FDA / LDA).
 
 # system on which we project the data (in PCA it's orhogonal basis, but here no)
 # Matrix Sp^(-1/2)
@@ -681,6 +683,7 @@ invSp.2
 # ration variability between groups compared to variability within groups
 # spectral decomposition of Sp^(-1/2) B Sp^(-1/2)
 spec.dec <- eigen(invSp.2 %*% B %*% invSp.2)
+spec.dec$val # as s=2, there will be two direction, where we can project our data
 
 # first canonical coordinate
 a1 <- invSp.2 %*% spec.dec$vec[,1] # not exact eigen vector, but multiplyed by invSp

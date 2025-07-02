@@ -76,6 +76,7 @@ ellipse(center=x.mean, shape=x.cov/n, radius=sqrt(cfr.fisher), lwd=2)
 k <- 2 # if we also wanted to plot for variances => k = 4
 alpha <- 0.05
 
+
 ICmean <- cbind(inf=x.mean - sqrt(diag(x.cov)/n) * qt(1 - alpha/(2*k), n-1),
                 center= x.mean,
                 sup= x.mean + sqrt(diag(x.cov)/n) * qt(1 - alpha/(2*k), n-1))

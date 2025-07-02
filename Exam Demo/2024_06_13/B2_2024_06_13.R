@@ -3,7 +3,7 @@ library(nlme)
 library(insight)
 library(lme4)
 
-# We are studying the e↵ect of temperature on the growth rate of tomatoes. The file tomatoes.txt contains data
+# We are studying the effect of temperature on the growth rate of tomatoes. The file tomatoes.txt contains data
 # regarding 2089 greenhouses growing 200 di↵erent species of tomatoes. Specifically it reports:
 #  • the average temperature in the greenhouse during the growth season: temp (the variable is centred)
 #  • the tomato species that is cultivated, encoded as an integer variable: species
@@ -52,3 +52,7 @@ anova(lme_model, lme_model2)
 # model 2 better, due to p-value < 0.05 (and we reject H0 of equal zero rzndom effects)
 # also AIC, BIC values lower for second model
 # and Model 2 consider how temeprature affect on growth for each species group
+
+# Model df      AIC      BIC    logLik   Test  L.Ratio        p-value
+# lme_model      1  4 9293.869 9316.443 -4642.934                        
+# lme_model2     2  6 9243.082 9276.943 -4615.541 1 vs 2 54.78688  <.0001

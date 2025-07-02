@@ -31,15 +31,16 @@ coef(Xsp$fd)[1:3, 1]
 pca_W <- pca.fd(data_W.fd, nharm=5, centerfns=TRUE)
 
 # scree plot
-# pca.fd computes all the 25 eigenvalues, but only the first 
-# N-1=34 are non-null
+# we had 13 basis function -> we will have 13 components
+# pca.fd computes all the 13 eigenvalues,
 plot(pca_W$values[1:35],xlab='j',ylab='Eigenvalues')
 plot(cumsum(pca_W$values)[1:35]/sum(pca_W$values),xlab='j',ylab='CPV',ylim=c(0.8,1))
 
 
 # we have 35 data, (features), so we can not plot more principal components
 pca_W$values
-cumsum(pca_W$values)[1:35]/sum(pca_W$values) # 13 components are not NAN, so to explain whole data I need 13 components
+cumsum(pca_W$values)[1:35]/sum(pca_W$values) # we have 13 PC, because we used basis of 13 function
+# I would take first 4 components, because they are explains more than 99% of variance 
 
 pca_W$values[2]/sum(pca_W$values) # 0.03984729
 # second PC exaplins 0.9668994 - 0.9270522 = 0.0398472 part of variance (took from cumsum)
@@ -50,8 +51,10 @@ layout(cbind(1,2))
 plot(pca_W$harmonics[1,],col=1,ylab='FPC1',ylim=c(0.0,0.4))
 abline(h=0,lty=2)
 plot(pca_W$harmonics[2,],col=2,ylab='FPC2',ylim=c(-0.5,0.5))
-# First component explains general values of energy consumption during day (lower at night, higher during the day)
-# while second explains high deviation among day and more like opposite to first component 
+
+# Показывает форму главных компонент.
+# Но не учитывает, насколько сильно каждая компонента варьирует относительно среднего.
+# Может ввести в заблуждение: кривые выглядят сильно различающимися по масштабу, хотя они еще не "взвешены".
 
 
 # plot of the FPCs as perturbation of the mean
@@ -66,14 +69,31 @@ lines(media+pca_W$harmonics[2,]*sqrt(pca_W$values[2]), col=2)
 lines(media-pca_W$harmonics[2,]*sqrt(pca_W$values[2]), col=3)
 # temperate climate or not
 
+# USE THIS TO EXPLAIN COMPONENTS
 # Command of the library fda that automatically does these plots
 par(mfrow=c(1,2))
 plot(pca_W, nx=100, pointplot=TRUE, harm=c(1,2), expand=0, cycle=FALSE)
+
+# Это стандартный способ интерпретации FPC: показывает, как средняя функция меняется, если отклониться на 1 стандартное отклонение вдоль FPC.
+# Очень полезно: можно сказать, например, что FPC1 отвечает за общее смещение вверх/вниз, а FPC2 — за пик в определенные часы.
+
+# First component explains general values of energy consumption during day (lower at night, higher during the day)
+# while second explains high deviation among day and more like opposite to first component 
+
 
 
 # d) Is the representation given by the first two principal components satisfying for distinguishing the working days
 # from the holidays? Support your answer with a plot.
 
+# By LDA
+lda.loads <- lda(load$daytype ~ pca_W$scores[,1:5]) # using first 5 components 
+lda.scores <- predict(lda.loads)$x # 1D projection
+# Plot the LDA 1D scores
+boxplot(lda.scores ~ load$daytype,
+        main="LDA 1D projection",
+        xlab="Day type", ylab="LDA score")
+
+# By FDA
 scores <- pca_W$scores
 plot(scores[, 1], scores[, 2], col = ifelse(load$daytype == "Working day", "blue", "red"),
      pch = 19, xlab = "PC1", ylab = "PC2", main = "Scores of First Two Principal Components")
@@ -195,9 +215,6 @@ a1 # so by a1, we can find better direction to discriminate our data
 plot(seq(-5,5))
 points(cc1.data[i1], rep(0, length(cc1.data[i1])), pch = 16, col = 'blue')
 points(cc1.data[i2], rep(0, length(cc1.data[i2])), pch = 16, col = 'red')
-
-
-
 
 
 
