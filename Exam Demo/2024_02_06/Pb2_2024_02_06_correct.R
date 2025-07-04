@@ -1,6 +1,7 @@
 library(MASS)
 library(MVN)
-
+library(car)
+library(heplots)
 
 # A large food manufacturing company, concerned about maintaining high standards in its products, is implementing
 # a new quality control measure to ensure the safety and integrity of its food items. Instead of relying solely on
@@ -104,12 +105,20 @@ AER      # 0.06713333 = 0.999*2/30 + 0.001*16/30
 # The company intends to use the classifier developed in (b) to identify potential low-quality products during the
 # upcoming production batch, which will consist of 1000 food items.
 
-# c) How much should be budgeted for the cost of the laboratory quality tests?
+# c) How much should be budgeted for the cost of the laboratory quality tests? (It's column "low")
+t <- table(class.true=food$result, class.assignedCV=lda.m_cv$class)
+t
 
-1000*(500*prior_high*2/30 + 100000*prior_low*16/30 + 500*prior_low*14/30)
+ptd <- t['low', 'low']/sum(t['low',]) * prior_low + t['high', 'low']/sum(t['high',]) * prior_high
+ptd
+ptd*1000*500 # 33533.33 # - correct
+
+1000*(500*prior_high*2/30 + 500*prior_low*14/30) # - correct
+
+# 1000*(500*prior_high*2/30 + 100000*prior_low*16/30 + 500*prior_low*14/30)
 
 # d) Compared to the previous strategy of conducting accurate laboratory tests on all products, does the new two-
 #   fold testing approach lead to a lower expected cost of misclassification? How much would be saved for this
 # upcoming production batch?
-1000*500 - 1000*(500*prior_high*2/30 + 100000*prior_low*16/30 + 500*prior_low*14/30)
+1000*500 - 1000*(500*prior_high*2/30 + 500*prior_low*14/30) # 466466.7
 

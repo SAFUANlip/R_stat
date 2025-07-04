@@ -88,6 +88,13 @@ metalic.cov <- cov(metalic_data)
 # pc2 0.001505507 0.007900650
 
 # Directions and axis length ---------------------------------------------------
+n_metalic <- nrow(metalic_data)
+p <- 2
+alpha <- 0.05
+
+cfr.fisher <- ((n_metalic - 1) * p / (n_metalic - p)) * qf(1 - alpha, p, n_metalic - p)
+cfr.fisher
+
 eig <- eigen(metalic.cov / n_metalic)
 directions <- eig$vectors      # направления (ось эллипса)
 lengths <- sqrt(eig$values * cfr.fisher)  # длины полуосей
@@ -101,12 +108,6 @@ directions  # Each column — direction of axis
 lengths     # длины полуосей (вдоль направлений) 
 # 0.03702053 0.03027514
 
-n_metalic <- nrow(metalic_data)
-p <- 2
-alpha <- 0.05
-
-cfr.fisher <- ((n_metalic - 1) * p / (n_metalic - p)) * qf(1 - alpha, p, n_metalic - p)
-cfr.fisher
 
 # Ellipsoidal confidence region with confidence level 95%
 plot(metalic_data, asp=1, pch=1, main='Metallic data')

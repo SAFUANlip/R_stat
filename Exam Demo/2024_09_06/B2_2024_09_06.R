@@ -126,11 +126,17 @@ AER      # 0.06676667
 # generally we have to compute Expected Misclassification Cost for 1000 patients
 # take misclassifications from APER table
 # (c_yes_no*2*p_no/n_no + c_no_yes*4*p_yes/n_yes) * 1000 # 46633.33
+# we will use table from AER 
 
-1000*(0.999*500*2/30 + 0.001*100000*4/30 + 0.001*500*26/30) # 47066.67
+1000*(500*p_no*2/30 + 500*p_yes*26/30) # 33733.33 - correct
+
+
+
+1000*(0.999*500*2/30 + 0.001*100000*4/30 + 0.001*500*26/30) # 47066.67 - expected economical expenses
+# (если бы пришлось учесть все затраты, даже на неправильно классифицированных)
 # 0.001*500*26/30 - budget spending also for patients, who was correctly predicted as sick 
 
-# (c_yes_no*2*p_no/n_no + c_no_yes*4*p_yes/n_yes) - EMC for one patient
+# (c_yes_no*2*p_no/n_no + c_no_yes*5*p_yes/n_yes) - EMC for one patient
 
 # e) Compared to the previous strategy of providing interventions based on scheduled check-ups for all patients, does
 # the new predictive monitoring approach lead to a lower expected cost of misclassification? How much would be
