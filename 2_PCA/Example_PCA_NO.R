@@ -101,13 +101,14 @@ summary(pca.NO)     # PCA on S
 # SCORES AND LOADINGS (PCA on S)#
 # Scores
 scores.NO <- pca.NO$scores
-scores.NO
+tail(scores.NO)
+tail(pca.NO$scores)
 layout(matrix(c(1,2),1,2))
 boxplot(NO, las=2, col='red', main='Variabili originarie')
 scores.NO <- data.frame(scores.NO)
 boxplot(scores.NO, las=2, col='red', main='Componenti principali')
-# pairs(scores.NO, col=rainbow(dim(scores.NO)[1]), pch=16)
-# cor(scores.NO)
+pairs(scores.NO, col=rainbow(dim(scores.NO)[1]), pch=16)
+cor(scores.NO)
 
 ## COMMENT ## 
 # The variability of the first two PCs (looking at the size of the boxes)

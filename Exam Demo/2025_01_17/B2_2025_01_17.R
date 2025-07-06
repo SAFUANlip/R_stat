@@ -60,6 +60,7 @@ plot(lm0$residuals)
 # irrigation.
 
 confint(lm0, level=0.99)
+confint(lm0, "temperature", level=0.99)
 # temperature  -0.18994090 -0.01027311 
 # temperature has negative coefficient and it's confidence interval does not contain 0, so we 
 # can affirm, that temperature has negative effect on crop yields

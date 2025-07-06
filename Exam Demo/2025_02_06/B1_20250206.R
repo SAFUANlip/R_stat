@@ -19,7 +19,7 @@ library(lubridate)
 # The dataset consists of data from 200 randomly selected individuals, along with information on whether they
 # regularly listen to classical music (classical) and whether they listen to upbeat music (upbeat).
 
-music <- read.table("./20250206/music.txt", h=TRUE)
+music <- read.table("2025_02_06/music.txt", h=TRUE)
 
 classical   <- factor(music$classical) # Treat.1
 upbeat   <- factor(music$upbeat) # Treat.2
@@ -74,7 +74,7 @@ alpha <- 0.05
 g <- 2 # number of levels of first factor
 b <- 2 # number of levels of second factor
 p <- 2 # num of features which means we compare 
-n <- 50
+n <- 50 # number of samples in each group
 N <- n*g*b # 20
 
 W <- summary.manova(fit2)$SS$Residuals

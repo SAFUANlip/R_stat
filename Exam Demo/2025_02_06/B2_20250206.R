@@ -74,7 +74,7 @@ summary(lme_model2)
 # (based on value of ceofficients from random effect)
 
 # d) Comment on whether M1 or M2 better explains the data, supporting your answer with an appropriate test.
-anova(lme_model, lme_model2, lme_model22) # 22 - model with random intercept and slope has only 6 params 
+anova(lme_model, lme_model22) # 22 - model with random intercept and slope has only 6 params 
 # so the model 2 better, because p-value is lower than 0.05 and we can reject H0 of not importance diet on sugar
 
 # Description of difference between standard model/intercept/slope -------------

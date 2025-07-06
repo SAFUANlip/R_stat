@@ -33,12 +33,22 @@ pc.athlete_stats <- princomp(athlete_stats, scores=T)
 pc.athlete_stats
 summary(pc.athlete_stats)
 
+pc.athlete_stats$loadings
+head(pc.athlete_stats$scores)
+
+# PCA on scaled data will have different result
+# summary(princomp(scale(athlete_stats), scores=T))$loadings
+# princomp(scale(athlete_stats), scores=T)$loadings
+# head(princomp(scale(athlete_stats), scores=T)$scores)
+
+help(princomp)
+
 # Importance of components:
 #                          Comp.1    Comp.2    Comp.3     Comp.4     Comp.5     Comp.6     Comp.7
 # Standard deviation     0.7508806 0.4576503 0.4126813 0.35343030 0.30353672 0.24955419 0.22959069
 # Proportion of Variance 0.4200826 0.1560488 0.1268886 0.09306803 0.06864604 0.04640051 0.03927367
 # Cumulative Proportion  0.4200826 0.5761314 0.7030200 0.79608805 0.86473408 0.91113459 0.95040826
-# Comp.8     Comp.9
+#                          Comp.8     Comp.9
 # Standard deviation     0.20935160 0.15077257
 # Proportion of Variance 0.03265469 0.01693705
 # Cumulative Proportion  0.98306295 1.00000000
@@ -126,10 +136,61 @@ pc.athlete_stats$center
 
 # what happen if don't centralise input
 t(as.matrix(new_obs - colMeans(athlete_stats))) %*% as.matrix(pc.athlete_stats$loadings)
+predict(pc.athlete_stats, new_obs_df)
+
+colMeans(athlete_stats)
+# sprint_speed      endurance  vertical_jump        agility       strength 
+# 0.8609686      1.0029763      0.9546951      0.9374458      0.7534036 
+# reaction_time       accuracy    flexibility throwing_power 
+# 1.0367553      0.8944484      1.0305398      0.9493422
+
+pc.athlete_stats$center
+# sprint_speed      endurance  vertical_jump        agility       strength 
+# 0.8609686      1.0029763      0.9546951      0.9374458      0.7534036 
+# reaction_time       accuracy    flexibility throwing_power 
+# 1.0367553      0.8944484      1.0305398      0.9493422
+
+pc.athlete_stats$scale
+# sprint_speed      endurance  vertical_jump        agility       strength 
+# 1              1              1              1              1 
+# reaction_time       accuracy    flexibility throwing_power 
+# 1              1              1              1
+
+diag(var(athlete_stats))
+# sprint_speed      endurance  vertical_jump        agility       strength 
+# 0.1130895      0.1442024      0.1400125      0.1556007      0.1119988 
+# reaction_time       accuracy    flexibility throwing_power 
+# 0.1849666      0.2046396      0.1557840      0.1454317
+
+# If centralise 
+t(as.matrix(new_obs - colMeans(athlete_stats))) %*% as.matrix(pc.athlete_stats$loadings)
 
 predict(pc.athlete_stats, new_obs_df) # model knowing, that data has not zero mean, centralise input by automatically 
 # predict(pc.NO.sd, new_obs_df-colMeans(NO)) # if we use pca, which trained on сentralised data - we have to centralise by ourself
 
 # Coordinates in first 3 PC:
 # 2.592293 0.2497497 0.02197077
+
+# What if we applied pca on centralised data (not on S, but Correlation)
+athlete_stats.sd <- scale(athlete_stats)
+pc.athlete_stats.sd <- princomp(athlete_stats.sd, scores=T)
+summary(pc.athlete_stats.sd)
+
+# we may see that loadings changed, as scores and proportion of variance in each component
+n_lod_show <- 3
+load.athlete_stats.sd <- pc.athlete_stats.sd$loadings
+par(mar = c(1, n_lod_show, 0, 2), mfrow = c(n_lod_show, 1))
+for (i in 1:n_lod_show) {
+  barplot(load.athlete_stats.sd[, i], ylim = c(-1, 1))
+}
+
+eigen(cov(athlete_stats))
+eigen(cov(athlete_stats.sd))
+
+load.athlete_stats.sd
+
+# same vetors, but may have opposite direction
+load.athlete_stats.sd[,"Comp.1"]
+eigen(cov(athlete_stats.sd))$vectors[,1]
+
 

@@ -63,7 +63,7 @@ s1.new=data.frame(x=0.0, y=0.0, orientation="S", elevation=0.0, optional=TRUE) #
 coordinates(s1.new)=c('x','y')
 predict(g.tr, s1.new, BLUE = TRUE) # var1.pred = 6.466195
 
-s2.new=data.frame(x=0.0, y=0.0, orientation="N", elevation=0.0, optional=TRUE) # North b_0_1
+s2.new=data.frame(x=0.0, y=0.0, orientation="N", elevation=0.0, optional=TRUE) # North b_0_0
 coordinates(s2.new)=c('x','y')
 predict(g.tr, s2.new, BLUE = TRUE) # var1.pred = -7.42604
 
@@ -85,7 +85,7 @@ plot(v2, v2.fit)
 # 1   Exp 0.2340876 803.079
 #          ~0.234
 
-# Second model shoul be more preferable due it it takes into account difference of
+# Second model should be more preferable due it it takes into account difference of
 # temperature depending on elevation among regions 
 # Also model d) has lower psill, which may say about better spatial variation
 # and bigger range may say about more smoother variogram 

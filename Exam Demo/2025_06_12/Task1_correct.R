@@ -39,7 +39,7 @@ var_eps
 
 
 PVRE <- var_b/(var_b+var_eps) # we can take them from summary as ^2 of StdDev
-PVRE # 0.3337571 - high value (hihg percent of variance eplained by groups)
+PVRE # 0.3337571 - high value (higр percent of variance explained by groups)
 
 
 # b) Fit an extended model M2, allowing heteroscedastic residuals: 

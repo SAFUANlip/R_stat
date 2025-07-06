@@ -909,7 +909,8 @@ tune.out <- tune(svm, y~., data=dat, kernel = 'linear',
 summary(tune.out)
 
 # Extract the best model from the result of tune
-# when we increase cost - we look fever support vector, and make boundary depended only on closees vectors
+# when we increase cost - we look fever (меньше) support vector,
+# and make boundary depended only on closees vectors
 # lower cost - bigger number of support vectors 
 bestmod <- tune.out$best.model
 summary(bestmod)
@@ -978,6 +979,7 @@ train <- sample (200 ,100)
 
 # Fit a Support Vector Machine (kernel = "radial") given a cost C
 svmfit <- svm(y~., data=dat [train ,], kernel ='radial', gamma =1, cost = 1)
+nrow(svmfit$SV)
 summary(svmfit)
 
 # Plot the SVM
@@ -996,6 +998,9 @@ table(true=dat[-train ,"y"], pred=predict (svmfit ,
 # Increasing the cost decreases the errors on the training set,
 # at the expense of a more irregular boundary
 svmfit <- svm(y~., data=dat [train ,], kernel ='radial', gamma =1, cost=1e5)
+svmfit$nSV # number of support vector in each group
+nrow(svmfit$SV) # number of Support vectors in total
+nrow(svmfit$SV) / nrow(dat[train,]) # proportion of support vectors among all data points
 
 plot(svmfit , dat[train,], col =c('salmon', 'light blue'), pch=19, asp=1)
 

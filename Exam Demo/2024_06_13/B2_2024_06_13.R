@@ -53,6 +53,6 @@ anova(lme_model, lme_model2)
 # also AIC, BIC values lower for second model
 # and Model 2 consider how temeprature affect on growth for each species group
 
-# Model df      AIC      BIC    logLik   Test  L.Ratio        p-value
+#   Model       df      AIC      BIC    logLik   Test  L.Ratio        p-value
 # lme_model      1  4 9293.869 9316.443 -4642.934                        
 # lme_model2     2  6 9243.082 9276.943 -4615.541 1 vs 2 54.78688  <.0001

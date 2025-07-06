@@ -57,6 +57,7 @@ anova(lme1, lme2) # p-value < 0.05 so we can reject H0 of zero not importance of
 
 # NET OF - за вычетом 
 
-ranef(summary(lme2)) 
+ranef(summary(lme2))
+max(ranef(summary(lme2)))
 # based on value of betta_0_i
 # highest emission in city with id 28, because it has biggest valuse of coefficent 

@@ -32,7 +32,7 @@ metro <- read.table("2024_07_08/metro.txt", h=TRUE)
 m.dist <- as.dist(metro)
 metro.hclust_single <- hclust(m.dist, method='single')
 plot(metro.hclust_single) # I would say, that here may be 3 clusters
-# but one of them "Fortaleza" have only one element, so I woul be exlude this method
+# but one of them: "Fortaleza" have only one element, so I woul be exlude this method
 
 metro.hclust_average <- hclust(m.dist, method='average')
 plot(metro.hclust_average) # here may see 3 clusters, pretty clear
