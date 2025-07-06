@@ -1,5 +1,6 @@
-library(MASS)
 library(MVN)
+library(car)
+library(heplots)
 
 
 # A healthcare technology company is developing a system for monitoring patients with chronic conditions remotely.
@@ -128,13 +129,13 @@ AER      # 0.06676667
 # (c_yes_no*2*p_no/n_no + c_no_yes*4*p_yes/n_yes) * 1000 # 46633.33
 # we will use table from AER 
 
-1000*(500*p_no*2/30 + 500*p_yes*26/30) # 33733.33 - correct
+1000*(500*p_no*2/30 + 500*p_yes*25/30) # 33716.67 - correct
 
 
 
-1000*(0.999*500*2/30 + 0.001*100000*4/30 + 0.001*500*26/30) # 47066.67 - expected economical expenses
+1000*(0.999*500*2/30 + 0.001*100000*5/30 + 0.001*500*25/30) # 50383.33 - expected economical expenses
 # (если бы пришлось учесть все затраты, даже на неправильно классифицированных)
-# 0.001*500*26/30 - budget spending also for patients, who was correctly predicted as sick 
+# 0.001*500*25/30 - budget spending also for patients, who was correctly predicted as sick 
 
 # (c_yes_no*2*p_no/n_no + c_no_yes*5*p_yes/n_yes) - EMC for one patient
 
@@ -143,7 +144,7 @@ AER      # 0.06676667
 # saved for this cohort?
 
 # "for all patients" - so everyone will get check-ups (treatment)
-1000*500 - 46633.33 # 453366.7 - how much we saved 
+1000*500 - 33716.67 # 466283.3 - how much we saved 
 
 # APER cycle computation ------------------------------------------------------------
 prior <- c(p_no, p_yes)

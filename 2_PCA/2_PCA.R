@@ -322,6 +322,8 @@ tourists.sd <- data.frame(tourists.sd)
 
 head(tourists.sd)
 
+sapply(tourists.sd, mean)
+
 # Boxplot
 par(mfrow = c(1, 1))
 boxplot(tourists.sd, las = 2, col = 'gold')
@@ -483,6 +485,7 @@ load.tour_log[, 1:8]
 # graphical representation of the loadings of the first three principal components
 par(mfrow = c(3,1))
 for(i in 1:3) barplot(load.tour_log[,i], ylim = c(-1, 1))
+
 
 # Here we may notice that frst component based on avergae of source variabels 
 # (probably it means overall number of visited tourists all type of hotels)

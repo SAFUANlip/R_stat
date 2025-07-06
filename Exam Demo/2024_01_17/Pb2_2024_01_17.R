@@ -24,7 +24,7 @@ p <- dim(asteroids_data)[2]
 # Exploration
 # I would  standartise variabels, due to each feature have different sample variance
 boxplot(asteroids_data, col = 'gold', main = 'Original Variables')
-asteroids_data.sd <- scale(asteroids_data, center=FALSE, scale=TRUE)
+asteroids_data.sd <- scale(asteroids_data, center=TRUE, scale=TRUE)
 asteroids_data.sd <- data.frame(asteroids_data.sd)
 boxplot(asteroids_data.sd, col = 'gold', main = 'Standartised Variables')
 
@@ -32,17 +32,22 @@ asteroids_data.sd
 
 pc.asteroids_data.sd <- princomp(asteroids_data.sd, scores=T)
 pc.asteroids_data.sd
+pc.asteroids_data.sd$center
 summary(pc.asteroids_data.sd)
 
+pc.asteroids_data.sd$loadings
+pc.asteroids_data.sd$scores
+pc.asteroids_data.sd$sd
+
 # Importance of components:
-#   Comp.1     Comp.2     Comp.3      Comp.4      Comp.5       Comp.6
-# Standard deviation     0.3176319 0.10193845 0.05498212 0.015708325 0.011378849 0.0101583597
-# Proportion of Variance 0.8775817 0.09038893 0.02629554 0.002146342 0.001126253 0.0008976073
-# Cumulative Proportion  0.8775817 0.96797061 0.99426616 0.996412498 0.997538751 0.9984363584
-# Comp.7       Comp.8
-# Standard deviation     0.0099822004 0.0089508503
-# Proportion of Variance 0.0008667459 0.0006968957
-# Cumulative Proportion  0.9993031043 1.0000000000
+#                           Comp.1    Comp.2    Comp.3      Comp.4      Comp.5     Comp.6
+# Standard deviation     2.3324730 1.2550751 0.9310733 0.179397585 0.117672149 0.09622897
+# Proportion of Variance 0.6846179 0.1982232 0.1090895 0.004049936 0.001742458 0.00116527
+# Cumulative Proportion  0.6846179 0.8828411 0.9919306 0.995980510 0.997722969 0.99888824
+#                           Comp.7       Comp.8
+# Standard deviation     0.0776202698 0.0530083695
+# Proportion of Variance 0.0007581677 0.0003535932
+# Cumulative Proportion  0.9996464068 1.0000000000
 
 # b) Report a plot of the loadings of the first two principal components and provide an interpretation. Report the
 # scatter plot of the data along the first two principal components. Considering the categorical variable Type,
@@ -80,12 +85,14 @@ metalic_data <- data.frame(
 mvn(metalic_data) # 1% significance level => if p-value > 0.01 => normal
 
 metalic.m <- sapply(metalic_data, mean)
-# 0.06248007 -0.08163318 
+metalic.m
+# 0.5154119 -0.7427783 
 
 metalic.cov <- cov(metalic_data)
+metalic.cov
 #.       pc1         pc2
-# pc1 0.009653561 0.001505507
-# pc2 0.001505507 0.007900650
+# pc1 0.515620 0.151028
+# pc2 0.151028 1.480236
 
 # Directions and axis length ---------------------------------------------------
 n_metalic <- nrow(metalic_data)
@@ -102,11 +109,11 @@ lengths <- sqrt(eig$values * cfr.fisher)  # длины полуосей
 # Результаты:
 directions  # Each column — direction of axis 
 #         [,1]       [,2]
-# [1,] -0.8669251  0.4984385
-# [2,] -0.4984385 -0.8669251
+# [1,] 0.1511506 -0.9885108
+# [2,] 0.9885108  0.1511506
 
 lengths     # длины полуосей (вдоль направлений) 
-# 0.03702053 0.03027514
+# 0.4425673 0.2533186
 
 
 # Ellipsoidal confidence region with confidence level 95%

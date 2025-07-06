@@ -117,7 +117,7 @@ eigen(vcov(fm)[2:3,2:3])
 eigen(rbind(c(0.5, 0.9),
             c(0.9, 0.5)))
 # Note: colinearity! (because ellipse flat) (our features dependent, especially in case when we look only on some train sample)
-# ellipse doesnt'tt contain  (0,0), so we reject H0, but if we will project on beta1 or beta2,
+# ellipse doesn't contain  (0,0), so we reject H0, but if we will project on beta1 or beta2,
 # then we get that it contain 0, so independatly this variabels don't have effect on target, but together
 # they are
 
@@ -458,6 +458,7 @@ IC <- exp(IC.log)
 IP <- exp(IP.log)
 X.new <- exp(X.new.log)
 matplot(X.new,IC,add=T,type='l',col=c('black','blue','blue'),lwd=2,lty=2)
+
 matplot(X.new,IP,add=T,type='l',col=c('black','green','green'),lwd=2,lty=2)
 
 #

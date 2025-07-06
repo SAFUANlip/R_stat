@@ -53,6 +53,8 @@ plot(lm0, which = 2) # plot showing homoscedasticity
 # and look on graphics of model 
 shapiro.test(lm0$residuals) # Can not reject H0 of nresiduals normality
 
+plot(lm0$residuals)
+
 # b) Test whether we can affrm with 99% confidence that temperature has a negative effect on crop yields. Additionally,
 # provide a 95% confidence interval for the mean difference in crop yields between areas with and without
 # irrigation.

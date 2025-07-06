@@ -257,7 +257,8 @@ y <- distance
 
 # Let's set a grid of candidate lambda's for the estimate
 lambda.grid <- 10^seq(5,-3,length=100)
-fit.lasso <- glmnet(x,y, lambda = lambda.grid) # default: alpha=1 -> lasso 
+fit.lasso <- glmnet(x,y, lambda = lambda.grid) # default: alpha=1 -> lasso
+fit.lasso
 # [note: if alpha=0 -> ridge regression] # aplha = 1 -> lasso, 0 < alpha < 1 -> elastic
 par(mfrow=c(1,1))
 plot(fit.lasso, xvar='lambda',label=TRUE, col = rainbow(dim(x)[2]))

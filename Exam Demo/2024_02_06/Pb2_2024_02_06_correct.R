@@ -113,7 +113,7 @@ ptd <- t['low', 'low']/sum(t['low',]) * prior_low + t['high', 'low']/sum(t['high
 ptd
 ptd*1000*500 # 33533.33 # - correct
 
-1000*(500*prior_high*2/30 + 500*prior_low*14/30) # - correct
+1000*(500*prior_high*2/30 + 500*prior_low*14/30) # 33533.33 # - correct (just my formula)
 
 # 1000*(500*prior_high*2/30 + 100000*prior_low*16/30 + 500*prior_low*14/30)
 

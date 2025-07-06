@@ -133,6 +133,8 @@ color.outliers[59] <- 'green'
 color.outliers[308] <- 'green'
 pairs(NO, col=color.outliers, pch=16, main='Scatter plot - Outliers')
 
+
+
 # Loadings
 load.NO    <- pca.NO$loadings
 load.NO
@@ -159,6 +161,10 @@ M <- sapply(NO[,1:3],mean)
 S <- cov(NO[,1:3])
 
 open3d()
+
+
+
+
 points3d(NO[,1:3], col=rainbow(dim(NO)[1]), asp=1, size=5)
 axes3d()
 plot3d(ellipse3d(S, centre=M, level= 9/10), alpha=0.25, add = TRUE)
@@ -241,3 +247,4 @@ pairs(data.frame(rbind(NO,data.3jul)), col=c(rep(1,n),2), pch=16, main='Scatter 
 x11()
 plot(scores.NO[,1],scores.NO[,2],col='grey',pch=19,xlab='Comp.1',ylab='Comp.2')
 points(scores.3jul[1],scores.3jul[2],col='black',pch=19) 
+

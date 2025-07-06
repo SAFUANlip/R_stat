@@ -686,8 +686,9 @@ summary.manova(fit)
 ### X.ijk = mu + tau.i + beta.j + eps.ijk; eps.ijk~N_p(0,Sigma), [p=3]
 ###     i=1,2 (effect Extrusion), j=1,2 (effect additive),
 ###     X.ijs, mu, tau.i, beta.j, in R^3
-fit2<- manova(as.matrix(plastic3) ~ Ex + Ad)
+fit2 <- manova(as.matrix(plastic3) ~ Ex + Ad)
 summary.manova(fit2)
+summary(fit2)
 
 # Both the treatments have a significant effect on the mean (but not
 # their interaction, that we could remove)
