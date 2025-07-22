@@ -114,8 +114,12 @@ abline(h=0)
 
 vcov(fm)[2:3,2:3]
 eigen(vcov(fm)[2:3,2:3])
-eigen(rbind(c(0.5, 0.9),
-            c(0.9, 0.5)))
+eigen(rbind(c(1, 0.1),
+            c(0.1, 1)))
+
+1.1 * 0.9
+
+1.9 * 0.1
 # Note: colinearity! (because ellipse flat) (our features dependent, especially in case when we look only on some train sample)
 # ellipse doesn't contain  (0,0), so we reject H0, but if we will project on beta1 or beta2,
 # then we get that it contain 0, so independatly this variabels don't have effect on target, but together

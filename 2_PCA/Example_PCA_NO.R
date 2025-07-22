@@ -101,8 +101,10 @@ summary(pca.NO)     # PCA on S
 # SCORES AND LOADINGS (PCA on S)#
 # Scores
 scores.NO <- pca.NO$scores
+
 tail(scores.NO)
 tail(pca.NO$scores)
+
 layout(matrix(c(1,2),1,2))
 boxplot(NO, las=2, col='red', main='Variabili originarie')
 scores.NO <- data.frame(scores.NO)
@@ -134,11 +136,13 @@ color.outliers[59] <- 'green'
 color.outliers[308] <- 'green'
 pairs(NO, col=color.outliers, pch=16, main='Scatter plot - Outliers')
 
-
+help(princomp)
 
 # Loadings
 load.NO    <- pca.NO$loadings
 load.NO
+
+pca.NO.std$loadings
 
 x11()
 par(mar = c(1,4,0,2), mfrow = c(4,1))
@@ -239,8 +243,13 @@ for(i in 1:4)
 #################################################################################
 
 data.3jul <- c(13, 10, 11, 13)
+df_data.3jul <- as.data.frame(t(data.3jul))
+colnames(df_data.3jul) <- colnames(NO)
+
 scores.3jul <- t(pca.NO$loadings)%*%(data.3jul-colMeans(NO))
 scores.3jul
+
+predict(pca.NO, df_data.3jul)
 
 x11()
 pairs(data.frame(rbind(NO,data.3jul)), col=c(rep(1,n),2), pch=16, main='Scatter plot - Data 3rd July')
@@ -248,4 +257,6 @@ pairs(data.frame(rbind(NO,data.3jul)), col=c(rep(1,n),2), pch=16, main='Scatter 
 x11()
 plot(scores.NO[,1],scores.NO[,2],col='grey',pch=19,xlab='Comp.1',ylab='Comp.2')
 points(scores.3jul[1],scores.3jul[2],col='black',pch=19) 
+
+as.matrix(c(1,0), c(0,1))
 

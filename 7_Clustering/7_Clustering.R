@@ -2,6 +2,8 @@
 ### Lab 7: Clustering  ###
 ###--------------------###
 
+# KLIbPAaVo7QbN66
+
 # TOPICS:
 # Hierarchical clustering
 # K-means clustering
